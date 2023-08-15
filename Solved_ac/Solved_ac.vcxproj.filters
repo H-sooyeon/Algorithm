@@ -375,5 +375,8 @@
     <ClCompile Include="다이어트.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
+    <ClCompile Include="최대 힙.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
