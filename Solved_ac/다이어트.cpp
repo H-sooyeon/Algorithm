@@ -1,80 +1,90 @@
 #include <bits/stdc++.h>
 using namespace std;
-int cnt, minIn[5];
-int dan[16], ji[16], tansu[16], vita[16], pay[16];
-int minPay = 500 * 15;
-vector<int> result;
+int n, dan, ji, tansu, vita, result = 987654321;
+vector<vector<int>> vv;
 
-void check(vector<int> b) {
-	int a = 0, b2 = 0, c = 0, d = 0;
-	int account = 0;
-	for (int i = 0; i < b.size(); i++) {
-		a += dan[b.at(i)];
-		b2 += ji[b.at(i)];
-		c += tansu[b.at(i)];
-		d += vita[b.at(i)];
-
-		account += pay[b.at(i)];
+bool compare(vector<int> a, vector<int> b) {
+	int aSize = a.size(), bSize = b.size();
+	for (int i = 0; i < min(aSize, bSize); i++) {
+		if (a.at(i) > b.at(i)) {
+			return true;
+		}
+		else if (a.at(i) < b.at(i)) {
+			return false;
+		}
 	};
 
-	if (a < minIn[0] || b2 < minIn[1] || c < minIn[2] || d < minIn[3]) return;
+	if (aSize > bSize) return true;
 
-	if (minPay >= account) {
-		minPay = account;
-		result.clear();
-		for (int i = 0; i < b.size(); i++) {
-			result.push_back(b.at(i));
-		};
-	};
-};
-
-void combi(int start, vector<int> b, int r) {
-	if (b.size() == r) {
-		check(b);
-		return;
-	};
-
-	for (int i = start + 1; i < cnt; i++) {
-		b.push_back(i);
-		combi(i, b, r);
-		b.pop_back();
-	};
-	return;
+	return false;
 };
 
 int main() {
-	ios_base::sync_with_stdio(false);
-	cin.tie(NULL);
-	cout.tie(NULL);
-
-	cin >> cnt;
-
-	for (int i = 0; i < 4; i++) {
-		cin >> minIn[i];
-	};
 	
+	cin >> n;
 
-	for (int i = 0; i < cnt; i++) {
-		cin >> dan[i] >> ji[i] >> tansu[i] >> vita[i] >> pay[i];
+	cin >> dan >> ji >> tansu >> vita;
+
+	int nutri1, nutri2, nutri3, nutri4, money;
+	for (int i = 0; i < n; i++) {
+		cin >> nutri1 >> nutri2 >> nutri3 >> nutri4 >> money;
+
+		vv.push_back({ nutri1, nutri2, nutri3, nutri4, money });
 	};
 
-	vector<int> v;
-	for (int i = 1; i <= cnt; i++) {
-		combi(-1, v, i);
+	vector<vector<int>> v;
+	vector<int> list;
+	for (int i = 0; i < (1 << n); i++) {
+		int vi1 = 0, vi2 = 0, vi3 = 0, vi4 = 0, pay = 0;
+		vector<int> fortemp;
+
+		for (int j = 0; j < n; j++) {
+			if (i & (1 << j)) {
+				vector<int> temp = vv.at(j);
+				vi1 += temp.at(0);
+				vi2 += temp.at(1);
+				vi3 += temp.at(2);
+				vi4 += temp.at(3);
+				pay += temp.at(4);
+
+				fortemp.push_back(j + 1);
+			};
+		};
+		
+		if (vi1 >= dan && vi2 >= ji && vi3 >= tansu && vi4 >= vita) {
+			if (result > pay) {
+				list.clear();
+				result = min(result, pay);
+
+				for (int j = 0; j < fortemp.size(); j++) {
+					list.push_back(fortemp.at(j));
+				};
+			}
+			else if(result == pay){
+
+				bool flag = compare(fortemp, list);
+
+				if (!flag) {
+					list.clear();
+					for (int j = 0; j < fortemp.size(); j++) {
+						list.push_back(fortemp.at(j));
+					};
+				};
+			};
+		};
 	};
 
-
-	if (result.empty()) {
-		cout << "-1" << "\n";
+	if (list.empty()) {
+		cout << -1 << "\n";
 	}
 	else {
-		cout << minPay << "\n";
-		sort(result.begin(), result.end());
-		for (int i = 0; i < result.size(); i++) {
-			cout << result.at(i) + 1 << " ";
+		std::cout << result << "\n";
+		for (int i = 0; i < list.size(); i++) {
+			std::cout << list.at(i) << " ";
 		};
-		cout << "\n";
-	}
+		std::cout << endl;
+	};
+
 
 	return 0;
-}
+};
