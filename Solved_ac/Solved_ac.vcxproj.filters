@@ -429,5 +429,8 @@
     <ClCompile Include="컵라면.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
+    <ClCompile Include="용돈 관리.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
