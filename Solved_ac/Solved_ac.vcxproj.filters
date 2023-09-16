@@ -432,5 +432,14 @@
     <ClCompile Include="용돈 관리.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
+    <ClCompile Include="팰린드롬인지 확인하기.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="게임.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="영역구하기.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
