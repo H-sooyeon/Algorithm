@@ -1,6 +1,5 @@
-// stack
-// top에서 나온 두 값이 일치하다면 제거
 function solution(s) {
+    let answer = -1;
     let stack = [];
     
     for(let i = 0; i < s.length; i++) {
@@ -11,5 +10,9 @@ function solution(s) {
         }
     }
     
-    return !stack.length ? 1 : 0;
+    if(stack.length) answer = 0;
+    else answer = 1;
+    
+
+    return answer;
 }
