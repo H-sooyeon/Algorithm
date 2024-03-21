@@ -8,7 +8,7 @@ function solution(want, number, discount) {
         })
         
         for(let i = 0; i < want.length; i++) {
-            if(map.get(want[i]) < number[i] || !map.get(want[i])) return false;
+            if(!map.get(want[i]) || map.get(want[i]) < number[i]) return false;
         }
         
         return true;
