@@ -1,23 +1,24 @@
 function solution(people, limit) {
-    let answer = 0;
+    var answer = 0;
     
-    people.sort((a, b) => a - b);
-
-    let left_pointer = 0;
-    let right_pointer = people.length - 1;
-    while(left_pointer <= right_pointer) {
-        if(people[left_pointer] + people[right_pointer] <= limit) {
-            // console.log(people[left_pointer] + people[right_pointer]);
-            answer++;
-            left_pointer++;
-            right_pointer--;
+    people.sort((a,b) => b - a);
+    
+    let left = 0, right = people.length - 1;
+    while(left < right) {
+        if(people[left] + people[right] <= limit) {
+            left++;
+            right--;
+        } else {
+            left++;
         }
-        else {
-            // console.log(people[left_pointer] + people[right_pointer]);
-            answer++;
-            right_pointer--;
-        }
+        answer++;
     }
+    
+    console.log('left: ', left);
+    console.log('left people:', people[left]);
+    console.log('right: ', right);
+    console.log('right people:', people[right]);
+    if(left === right) answer++;
     
     return answer;
 }
