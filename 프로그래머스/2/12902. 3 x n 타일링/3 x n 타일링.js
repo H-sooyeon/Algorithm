@@ -10,8 +10,9 @@ function solution(n) {
     
     for(let i = 4; i <= n; i+=2) {
         dp[i] = (4 * dp[i - 2] - dp[i - 4]) % 1000000007;
-        if (dp[i] <= 0)
+        if(dp[i] < 0) {
             dp[i] += 1000000007;
+        }
     }
 
     return dp[n];
