@@ -15,49 +15,63 @@ class Queue {
     front() {
         return this.items[this.head];
     }
+    size() {
+        return this.tail - this.head;
+    }
 }
 
 function solution(queue1, queue2) {
     let answer = 0;
     
-    let queue1_arr = new Queue();
-    let queue2_arr = new Queue();
+    let q1 = new Queue();
+    let q2 = new Queue();
     
-    let queue1_sum = queue1.reduce((acc, cur) => {
-        queue1_arr.push(cur);
-        return acc + cur;
+    let q1_sum = queue1.reduce((acc, cur) => {
+        q1.push(cur);
+        return cur + acc;
+    }, 0)
+    
+    let q2_sum = queue2.reduce((acc, cur) => {
+        q2.push(cur);
+        return cur + acc;
     }, 0);
-    let queue2_sum = queue2.reduce((acc, cur) => {
-        queue2_arr.push(cur);
-        return acc + cur;
-    }, 0);
     
-    if(queue1_sum === queue2_sum) return 0;
-    if((queue1_sum + queue2_sum) % 2 === 1) return -1;
+    let total = q1_sum + q2_sum;
     
-    let total = queue1_sum + queue2_sum;
+    if(q1_sum === q2_sum) return 0;
+    if(total % 2 === 1) return -1;
     
-    let loop = queue1.length * 3 - 3;
-    while(queue1_sum !== queue2_sum) {
-        if(answer > loop) return -1;
-        
-        if(queue1_sum < queue2_sum) {
-            let value = queue2_arr.front();
-            queue2_arr.pop();
-            queue1_arr.push(value);
-            queue1_sum += value;
-            queue2_sum -= value;
+    // queue1 * 3번 반복되면 다시 원점으로 돌아감
+    for(let i = 0; i < queue1.length * 3; i++) {
+        if(q1_sum < q2_sum) {
+            let v = q2.front();
+            q1.push(v);
+            
+            q1_sum += v;
+            q2_sum -= v;
+            
+            q2.pop();
+            
+            answer++
         }
-        else {
-            let value = queue1_arr.front();
-            queue1_arr.pop();
-            queue2.push(value);
-            queue1_sum -= value;
-            queue2_sum += value;
-        };
+        else if(q1_sum > q2_sum) {
+            let v = q1.front();
+            q2.push(v);
+            
+            q2_sum += v;
+            q1_sum -= v;
+            
+            q1.pop();
+            
+            answer++;
+        }
         
-        answer++;
+        if(q1_sum === q2_sum) {
+            return answer;
+        }
     }
-        
-    return answer;
+    
+    
+    
+    return -1;
 }
