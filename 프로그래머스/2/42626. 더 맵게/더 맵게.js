@@ -94,23 +94,26 @@ PriorityQueue.prototype._swap = function(a, b) {
 
 function solution(scoville, K) {
     let answer = 0;
+    let pq = new PriorityQueue((a, b) => b - a);
     
-    // if(Math.max(...scoville) <= 0) return -1;
+    scoville.forEach((v) => pq.enq(v));
     
-    let queue = new PriorityQueue((a, b) => b - a);
-    scoville.forEach((v) => queue.enq(v));
-
-    while(queue.size() > 1) {
-        if(queue.peek() >= K) break;
-        
-        let min_value1 = queue.deq();
-        let min_value2 = queue.deq();
-        
-        queue.enq(min_value1 + min_value2 * 2);
-        answer++;
+    let minV1, minV2;
+    
+    while(true) {
+        if(pq.size() >= 2) {
+            minV1 = pq.deq();
+            minV2 = pq.deq();
+            
+            if(minV1 >= K) break;
+            
+            pq.enq(minV1 + minV2 * 2);
+            answer++;
+        } else {
+            if(pq.peek() > K) return answer;
+            else return -1;
+        }
     }
-    
-    if(queue.size() && queue.peek() < K) return -1;
     
     return answer;
 }
