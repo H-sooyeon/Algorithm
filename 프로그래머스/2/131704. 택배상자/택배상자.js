@@ -7,8 +7,8 @@ function solution(order) {
         
         let length = stack.length;
         while(length && stack[length - 1] === order[answer]) {
-            answer++;
             stack.pop();
+            answer++;
             length = stack.length;
         }
     }
