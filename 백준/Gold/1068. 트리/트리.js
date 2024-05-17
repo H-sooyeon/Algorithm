@@ -21,11 +21,8 @@ for (let i = 0; i < arr.length; i++) {
   if (arr[i] !== -1) {
     tree[i].parent = arr[i];
     tree[arr[i]].child.push(i);
-    // console.log(tree[i], tree[arr[i]]);
   } else root = i;
 }
-
-// console.log(tree);
 
 tree[remove].check = true;
 let removeNode = [remove];
@@ -42,20 +39,13 @@ while (removeNode.length) {
   if (removeNode.length) remove = removeNode[0];
 }
 
-// console.log(tree);
-
 let answer = 0;
-let checkCnt = 0;
 for (let i = 0; i < tree.length; i++) {
   if (tree[i].check) {
-    checkCnt++;
     continue;
   }
   if (tree[i].child.length === 0) answer++;
   if (tree[i].child.length === 1 && tree[tree[i].child[0]].check) answer++;
 }
 
-// console.log(tree);
-
-if (checkCnt === n - 1) answer = 1;
 console.log(answer);
