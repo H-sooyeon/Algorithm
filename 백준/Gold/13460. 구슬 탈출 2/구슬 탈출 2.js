@@ -90,11 +90,12 @@ while (queue.length > 0) {
       }
     }
 
-    if (visited[[...red, ...blue].toString()]) {
+    let current = [...red, ...blue].toString();
+    if (visited[current]) {
       continue;
     }
 
-    visited[[...red, ...blue].toString()] = true;
+    visited[current] = true;
     cnt++;
     queue.push([red, blue, cnt]);
   }
