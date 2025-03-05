@@ -1,24 +1,30 @@
-let fs = require('fs');
-let input = fs.readFileSync('/dev/stdin').toString().split('\n');
+let fs = require("fs");
+let input = fs.readFileSync("/dev/stdin").toString().split("\n");
 
-let n = Number(input[0]);
-let k = Number(input[1]);
+// let input = `3
+// 7`.split("\n");
 
-let start = 1; // 가장 작은 값
-let end = 10 ** 9; // 가장 큰 값
+const n = Number(input[0]);
+const k = Number(input[1]);
 
-let result = 0;
-while(start <= end) {
-  let mid = parseInt((start + end) / 2); // 찾고자 하는 B[k]
-  let total = 0;
-  for(let i = 1; i <= n; i++) {
-    total += Math.min(parseInt(mid / i), n); // mid보다 작은 수의 개수
+let row = 1;
+let high = 10 ** 9;
+let answer = 0;
+
+while (row <= high) {
+  const mid = Math.floor((row + high) / 2);
+
+  let cnt = 0;
+  for (let i = 1; i <= n; i++) {
+    cnt += Math.min(Math.floor(mid / i), n);
   }
-  if(total < k) start = mid + 1;
-  else {
-    result = mid;
-    end = mid - 1;
+
+  if (cnt < k) {
+    row = mid + 1;
+  } else {
+    high = mid - 1;
+    answer = mid;
   }
 }
 
-console.log(result);
+console.log(answer);
