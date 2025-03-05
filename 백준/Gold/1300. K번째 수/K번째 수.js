@@ -8,7 +8,7 @@ const n = Number(input[0]);
 const k = Number(input[1]);
 
 let row = 1;
-let high = 10 ** 9;
+let high = Math.min(10 ** 9, n ** 2);
 let answer = 0;
 
 while (row <= high) {
