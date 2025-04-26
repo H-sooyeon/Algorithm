@@ -1,49 +1,57 @@
 function solution(scores) {
-    let answer = 1;
-    let incentive_employee = new Set();
-    let wanho_sum = scores[0][0] + scores[0][1];
-    let incentive = [];
-    let employee = [];
-    
-    // key 값으로 사원 번호 할당
-    scores.forEach((v, idx) => {
-        employee.push([idx, ...v]);
-    })
-    
-    employee.sort((a, b) => {
+    let answer = 0;
+    const personScores = scores.map((score, idx) => [idx, ...score])
+    const len = personScores.length;
+
+    personScores.sort((a, b) => {
         if(a[1] === b[1]) {
-            return a[2] - b[2];
+            return b[2] - a[2];
         }
-        return b[1] - a[1];
+        return a[1] - b[1];
     })
-            
-    let prev = employee[0][2];
-    incentive.push(employee[0]);
-    incentive_employee.add(employee[0][0]);
-    for(let i = 1; i < employee.length; i++) {
-        if(prev > employee[i][2]) {
+    
+    let maxPerson = personScores[len - 1];
+    const filteredPerson = [];
+    
+    for(let i = len - 1; i >= 0; i--) {
+        const curPerson = personScores[i];
+        
+        if(curPerson[2] > maxPerson[2]) {
+            maxPerson = [...curPerson];
+        }
+        else if(curPerson[1] < maxPerson[1] && curPerson[2] < maxPerson[2]) {
             continue;
         }
-        incentive.push(employee[i]);
-        incentive_employee.add(employee[i][0]);
+        filteredPerson.push([curPerson[0], curPerson[1] + curPerson[2]]);
+    }
+    
+    filteredPerson.sort((a, b) => {
+        if(a[1] === b[1]) return a[0] - b[0];
+        return b[1] - a[1]
+    });
+    if(filteredPerson[0][0] === 0) {
+        return 1;
+    }
+    
+    for(let i = 0; i < filteredPerson.length; i++) {
+        if(filteredPerson[i][0] === 0) return i+1;
+    }
         
-        prev = employee[i][2];
-    }
-    
-    // console.log(incentive);
-    // console.log(incentive_employee);
-    
-    if(!incentive_employee.has(0)) {
-        return -1;
-    }
-    
-    for(let i = 0; i < incentive.length; i++) {
-        let sum = incentive[i][1] + incentive[i][2];
+//     let duplication = 0;
+//     let rank = 1;
+//     for(let i = 1; i < filteredPerson.length; i++) {
+//         if(filteredPerson[i-1][1] === filteredPerson[i][1]) {
+//             duplication += 1;
+//         }
+//         else if(filteredPerson[i-1][1] > filteredPerson[i][1]) {
+//             rank += (1 + duplication);
+//             duplication = 0;
+//         }
         
-        if (sum > wanho_sum) {
-            answer++;
-        }
-    }
+//         if(filteredPerson[i][0] === 0) {
+//             return rank;
+//         }
+//     }
     
-    return answer;
+    return -1;
 }
