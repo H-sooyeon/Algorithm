@@ -1,112 +1,102 @@
 function solution(commands) {
     let answer = [];
-    let table = Array.from({length: 51}, () => Array.from({length: 51}, () => ["", undefined]));
-
-    const getKey = (r, c) => {
-        return `${r},${c}`;
+    const table = Array.from({length: 51}, () => Array(51));
+    
+    const makeKey = (row, col) => {
+        return `${row},${col}`;
     }
     
     for(let i = 1; i < 51; i++) {
         for(let j = 1; j < 51; j++) {
-            table[i][j][1] = getKey(i, j);
+            table[i][j] = [makeKey(i, j), null];
         }
     }
     
-    const merging = (r1, c1, r2, c2) => {
-        // 같은 곳이라면 무시
-        if(Math.abs(r1 - r2) + Math.abs(c1 - c2) === 0) {
-            return;
-        }
-        
-        let value = "";
-        const r1c1key = table[r1][c1][1];
-        const r2c2key = table[r2][c2][1];
-        
-        if(table[r2][c2][0] !== "") {
-            value = table[r2][c2][0];
-        }
-        
-        if(table[r1][c1][0] !== "") {
-            value = table[r1][c1][0];
-        }
-        
-        for(let i = 1; i < 51; i++) {
-            for(let j = 1; j < 51; j++) {
-                if(table[i][j][1] === r1c1key) {
-                    table[i][j][0] = value;
+    const update = (command) => {
+        if(command.length === 3) {
+            let [r, c, value] = command;
+            const key = table[Number(r)][Number(c)][0];
+            
+            for(let i = 1; i < 51; i++) {
+                for(let j = 1; j < 51; j++) {
+                    if(table[i][j][0] === key) {
+                        table[i][j][1] = value;
+                    }
                 }
-                if(table[i][j][1] === r2c2key) {
-                    table[i][j][0] = value;
-                    table[i][j][1] = r1c1key;
+            }
+        }
+        else if(command.length === 2) {
+            let [value1, value2] = command;
+            for(let i = 1; i < 51; i++) {
+                for(let j = 1; j < 51; j++) {
+                    if(table[i][j][1] === value1) {
+                        table[i][j][1] = value2;
+                    }
                 }
             }
         }
     }
     
-    // UPDATE, MERGE, UNMERGE PRINT
-    commands.forEach((command, idx) => {
-        const [keyword, ...orders] = command.split(' ');
+    const merge = (command) => {
+        const [r1, c1, r2, c2] = command.map(Number);
         
-        switch(keyword) {
-            case 'UPDATE':
-                if(orders.length === 3) {
-                    const [r, c, value] = orders;
-                    const mergeKey = table[r][c][1];
-                    
-                    for(let i = 1; i < 51; i++) {
-                        for(let j = 1; j < 51; j++) {
-                            if(table[i][j][1] === mergeKey) {
-                                table[i][j][0] = value;
-                            }
-                        }
-                    }
-                    
-                    table[+r][+c][0] = value;
+        const key1 = table[r1][c1][0];
+        const key2 = table[r2][c2][0];
+        
+        let value = table[r2][c2][1];
+        
+        if(table[r1][c1][1] !== null) {
+            value = table[r1][c1][1];
+        }
+        
+        for(let i = 1; i < 51; i++) {
+            for(let j = 1; j < 51; j++) {
+                if(table[i][j][0] === key2) {
+                    table[i][j][0] = key1;
+                    table[i][j][1] = value;
                 }
-                else {
-                    const [value1, value2] = orders;
-                    
-                    for(let i = 1; i < 51; i++) {
-                        for(let j = 1; j < 51; j++) {
-                            if(table[i][j][0] === value1) {
-                                table[i][j][0] = value2;
-                            }
-                        }
-                    }
+                if(table[i][j][0] === key1) {
+                    table[i][j][1] = value;
                 }
-                break;
-            case 'MERGE':
-                const [r1, c1, r2, c2] = orders.map(Number);
-                merging(r1, c1, r2, c2);
-                break;
-            case 'UNMERGE':
-                const [r, c] = orders.map(Number);
-                const mergeKey = table[r][c][1];
-                const mergeValue = table[r][c][0];
-                
-                for(let i = 1; i < 51; i++) {
-                    for(let j = 1; j < 51; j++) {
-                        if(table[i][j][1] === mergeKey) {
-                            table[i][j][0] = "";
-                            table[i][j][1] = getKey(i, j);
-                        }
-                    }
+            }
+        }
+    }
+    
+    const unmerge = (command) => {
+        const [r, c] = command.map(Number);
+        const key = table[r][c][0];
+        const value = table[r][c][1];
+        
+        for(let i = 1; i < 51; i++) {
+            for(let j = 1; j < 51; j++) {
+                if(table[i][j][0] === key) {
+                    table[i][j][0] = makeKey(i, j);
+                    table[i][j][1] = null;
                 }
-                
-                table[r][c][0] = mergeValue;
-                break;
-            case 'PRINT':
-                const [printR, printC] = orders.map(Number);
-                
-                if(table[printR][printC][0] === "") {
-                    answer.push('EMPTY');
-                }
-                else {
-                    answer.push(table[printR][printC][0]);
-                }
-                break;
-            default:
-                break;
+            }
+        }
+        table[r][c][1] = value;
+    }
+    
+    commands.forEach((item) => {
+        const [command, ...rest] = item.split(' ');
+        
+        if(command === 'UPDATE') {
+            update(rest);
+        }
+        else if(command === 'MERGE') {
+            merge(rest);
+        }
+        else if(command === 'UNMERGE') {
+            unmerge(rest);
+        }
+        else if(command === 'PRINT') {
+            const [r, c] = rest.map(Number);
+            if(table[r][c][1] === null) {
+                answer.push('EMPTY');
+            } else {
+                answer.push(table[r][c][1]);
+            }
         }
     })
     
