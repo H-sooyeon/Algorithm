@@ -1,94 +1,96 @@
+class Queue {
+    constructor() {
+        this.items = {};
+        this.head = 0;
+        this.tail = 0;
+    }
+    push(item) {
+        this.items[this.tail] = item;
+        this.tail += 1;
+    }
+    pop() {
+        delete this.items[this.head];
+        this.head += 1;
+    }
+    front() {
+        return this.items[this.head];
+    }
+    size() {
+        return this.tail - this.head;
+    }
+}
+
 function solution(rectangle, characterX, characterY, itemX, itemY) {
-    characterX *= 2;
-    characterY *= 2;
-    itemX *= 2;
-    itemY *= 2;
-    
-    let graph = Array.from({length: 103}, () => Array(103).fill(0));
-    let doubleRec = rectangle.map(rec => rec.map(point => point * 2));
-    
-    for(let i = 0; i < doubleRec.length; i++) {
-        let [lbx, lby, rtx, rty] = doubleRec[i];
-        
-        // 좌측 하단에서 좌측 상단으로
-        for(let j = lby; j <= rty; j++) {
-            graph[j][lbx] = 1;
-        }
-        
-        // 상단
-        for(let j = lbx; j <= rtx; j++) {
-            graph[lby][j] = 1;
-        }
-        
-        // 오른쪽
-        for(let j = lby; j <= rty; j++) {
-            graph[j][rtx] = 1;
-        }
-        
-        // 하단      
-        for(let j = lbx; j <= rtx; j++) {
-            graph[rty][j] = 1;
-        }
-        
-    }
-    
-    for(let i = 0; i < doubleRec.length; i++) {
-        let [lbx, lby, rtx, rty] = doubleRec[i];
-        
-        // 내부 채워주기
-        for(let j = lby + 1; j < rty; j++) {
-            for(let k = lbx + 1; k < rtx; k++) {
-                graph[j][k] = 2;
-            }
-        }
-    }
+    let answer = 987654321;
+    const board = Array.from({length:101}, () => Array(101).fill(0));
+    const visited = Array.from({length:101}, () => Array(101).fill(false));
+    const [newChaX, newChY] = [characterX * 2, characterY * 2];
+    const [newItemX, newItemY] = [itemX * 2, itemY * 2];
     
     const dy = [-1, 0, 1, 0];
     const dx = [0, 1, 0, -1];
     
-    let queue = [];
-    queue.push([characterY, characterX, 0]);
-    graph[characterY][characterX] = 0
-    
-    while(queue.length) {
-        let [y, x, cnt]= queue.shift();
+    rectangle.forEach((rec) => {
+        const [lbx, lby, rtx, rty] = rec.map((el) => el * 2);
         
-        if(y === itemY && x === itemX) {
-            return cnt / 2;
+        // 바닥
+        for(let j = lbx; j <= rtx; j++) {
+            if(board[lby][j] !== -1) {
+                board[lby][j] = 1;
+            }
         }
+        // 왼쪽
+        for(let i = lby; i <= rty; i++) {
+            if(board[i][lbx] !== -1) {
+                board[i][lbx] = 1;
+            }
+        }
+        // 오른쪽
+        for(let i = lby; i <= rty; i++) {
+            if(board[i][rtx] !== -1) {
+                board[i][rtx] = 1;
+            }
+        }
+        // 위쪽
+        for(let j = lbx; j <= rtx; j++) {
+            if(board[rty][j] !== -1) {
+                board[rty][j] = 1;
+            }
+        }
+        // 내부
+        for(let i = lby + 1; i <= rty - 1; i++) {
+            for(let j = lbx + 1; j <= rtx - 1; j++) {
+                board[i][j] = -1;
+            }
+        }
+    })
+    
+    const bfs = (startY, startX) => {
+        const queue = new Queue();
+        queue.push([startY, startX, 0]);
         
-        for(let i = 0; i < 4; i++) {
-            let ny = y + dy[i];
-            let nx = x + dx[i];
+        while(queue.size() > 0) {
+            const [y, x, cost] = queue.front();
+            queue.pop();
             
-            if(graph[ny][nx] === 1) {
-                queue.push([ny, nx, cnt + 1]);
-                graph[ny][nx] = 0;
+            if(y === newItemY && x === newItemX) {
+                answer = Math.min(answer, cost / 2);
+            }
+            
+            for(let i = 0; i < 4; i++) {
+                const ny = y + dy[i];
+                const nx = x + dx[i];
+                
+                if(ny >= 101 || nx >= 101 || ny <= 0 || nx <= 0) continue;
+                if(board[ny][nx] !== 1 || visited[ny][nx]) continue;
+                
+                queue.push([ny, nx, cost + 1]);
+                visited[y][x] = true;
             }
         }
     }
     
-//     const dfs = (y, x, cnt) => {
-//         visited[y][x] = true;
-        
-//         if(y === itemY && x === itemX) {
-//             answer = Math.min(answer, cnt);
-//             visited[y][x] = false;
-//             return;
-//         }
-        
-//         for(let i = 0; i < 4; i++) {
-//             let ny = y + dy[i];
-//             let nx = x + dx[i];
-            
-//             if(ny >= max_v + 1 || ny < 0 || nx >= max_v + 1 || nx < 0) continue;
-//             if(visited[ny][nx] || graph[ny][nx] > 1 || graph[ny][nx] === 0) continue;
-            
-//             dfs(ny, nx, cnt + 1);
-//         }
-//     }
+    bfs(newChY, newChaX);
     
-//     dfs(characterY, characterX, 0);
-    
-    return 0;
+    return answer;
 }
