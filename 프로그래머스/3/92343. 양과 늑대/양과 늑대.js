@@ -1,36 +1,34 @@
-function solution(info, edges) {
-    let answer = 0;
-    let tree = Array.from({length: info.length}, () => []);
+// 모은 양의 수보다 늑대 수가 같거나 더 많아지면 모든 양을 잡아먹는다.
+function solution(info, edges) { // 양 또는 늑대에 대한 배열, 연결 관계
+    let answer = 1;
+    const tree = Array.from({length: info.length}, () => Array());
     
-    for(let edge of edges) {
+    edges.forEach((edge) => {
         const [parent, child] = edge;
-        
         tree[parent].push(child);
-    }
+    })
     
-    const dfs = (node, possible, sheep, wolf) => {
-        if(sheep <= wolf) return;
+    const dfs = (wolf, sheep, node, searchNode) => {
+        if(wolf >= sheep) return;
+        
         answer = Math.max(sheep, answer);
         
-        // 접근할 수 있는 노드들을 리스트화한다.
-        let possibleNode = [...possible, ...tree[node]];
+        const newSearchNode = searchNode.filter((el) => el !== node);
+        for(let next of tree[node]) {
+            newSearchNode.push(next);
+        }
         
-        // 현재 노드는 이미 방문했으므로 제거
-        const idx = possibleNode.findIndex((v) => v === node);
-        possibleNode.splice(idx, 1);
-        
-        for(let access of possibleNode) {
-            if(info[access]) {
-                // 늑대
-                dfs(access, possibleNode, sheep, wolf + 1);
-            } else {
-                // 양
-                dfs(access, possibleNode, sheep + 1, wolf);
+        for(let next of newSearchNode) {
+            if(info[next] === 0) {
+                dfs(wolf, sheep + 1, next, newSearchNode);
+            }
+            else {
+                dfs(wolf + 1, sheep, next, newSearchNode);
             }
         }
     }
     
-    dfs(0, [0], 1, 0);
+    dfs(0, 1, 0, [0]);
     
     return answer;
 }
