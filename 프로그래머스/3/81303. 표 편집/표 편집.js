@@ -1,81 +1,115 @@
 function solution(n, k, cmd) {
-    let answer = new Array(n).fill('O');
+    let answer = '';
+    const nodes = new Array(n);
+    let curFocus = k;
+    const deletedNodes = [];
+    const nodesResult = new Array(n).fill(false);
     
-    const Node = function(idx, prevNode) {
-        this.idx = idx;
-        this.prev = prevNode;
-        this.next;
+    function Node(id, prev, next) {
+        this.id = id;
+        this.prev = prev;
+        this.next = next;
     }
     
-    let root = new Node(0);
-    let curNode = root;
-    let prevNode = root;
+    nodes[0] = new Node(0, null, null);
     
     for(let i = 1; i < n; i++) {
-        const newNode = new Node(i, prevNode);
-        prevNode.next = newNode;
-        
-        if(i === k) {
-            curNode = newNode;
-        }
-        
-        prevNode = newNode;
+        const node = new Node(i, nodes[i-1], null);
+        nodes[i] = node;
     }
     
-    let history = [];
-    cmd.map((command) => {
-        const [commandLine, count] = command.split(' ');
-        let idxCnt = 0;
-        switch(commandLine) {
-            case 'U':
-                while(idxCnt < count && curNode.prev) {
-                    curNode = curNode.prev;
-                    idxCnt++;
-                }
-                break;
-            case 'D':
-                while(idxCnt < count && curNode.next) {
-                    curNode = curNode.next;
-                    idxCnt++;
-                }
-                break;
-            case 'C':
-                history.push(curNode);
-                const prev = curNode.prev;
-                const next = curNode.next;
-                
-                if(prev && next) {
-                    prev.next = next;
-                    next.prev = prev;
-                    curNode = next;
-                }
-                else if(prev) {
-                    prev.next = next;
-                    curNode = prev;
-                }
-                else if(next) {
-                    next.prev = null;
-                    curNode = next;
-                }
-                break;
-            case 'Z':
-                const node = history.pop();
-                const prevNode = node.prev;
-                const nextNode = node.next;
-                
-                if(prevNode) {
-                    prevNode.next = node;
-                }
-                if(nextNode) {
-                    nextNode.prev = node;
-                }
-                break;
+    nodes[n-1].next = null;
+    
+    for(let i = n - 2; i >= 0; i--) {
+        nodes[i].next = nodes[i+1];
+    }
+    
+    const up = (move, curFocus) => {
+        let targetNode = nodes[curFocus];
+        for(let i = 0; i < move; i++) {
+            if(nodes[targetNode.id].prev) {
+                targetNode = nodes[targetNode.id].prev;
+            }
+        }
+        
+        return targetNode.id;
+    }
+    
+    const down = (move, curFocus) => {
+        let targetNode = nodes[curFocus];
+        for(let i = 0; i < move; i++) {
+            if(nodes[targetNode.id].next) {
+                targetNode = nodes[targetNode.id].next;
+            }
+        }
+        
+        return targetNode.id;
+    }
+    
+    const deleteCurRow = () => {
+        deletedNodes.push(nodes[curFocus]);
+        // 삭제된 행이 가장 마지막 행인 경우 바로 윗 행 선택
+        const prevNode = nodes[curFocus].prev;
+        const nextNode = nodes[curFocus].next;
+            
+        if(prevNode && nextNode) {
+            prevNode.next = nextNode;
+            nextNode.prev = prevNode;
+            curFocus = nextNode.id;
+        }
+        else if(!prevNode && nextNode) {
+            nextNode.prev = null;
+            curFocus = nextNode.id;
+        }
+        else if(prevNode && !nextNode) {
+            curFocus = prevNode.id;
+            prevNode.next = null;
+        }
+    }
+    
+    const restoration = () => {
+        const lastDeletedNode = deletedNodes.pop();
+        const prevNode = lastDeletedNode.prev;
+        const nextNode = lastDeletedNode.next;
+        
+        if(prevNode) {
+            prevNode.next = lastDeletedNode;
+        }
+        if(nextNode) {
+            nextNode.prev = lastDeletedNode;
+        }
+    }
+    
+    cmd.forEach((item) => {
+        const [command, move] = item.split(' ');
+        // console.log('command', command, 'move', move, 'curFocus', curFocus);
+        
+        if(command === 'U') {
+            curFocus = up(parseInt(move), curFocus);
+            // console.log('up', curFocus)
+        }
+        else if(command === 'D') {
+            curFocus = down(parseInt(move), curFocus);
+            // console.log('down', curFocus);
+        }
+        else if(command === 'C') {
+            deleteCurRow();
+            // console.log('delete', curFocus);
+        }
+        else if(command === 'Z') {
+            restoration();
+            // console.log('restoration', curFocus);
         }
     })
     
-    history.map((node) => {
-        answer[node.idx] = 'X';
-    })
+    for(let node of deletedNodes) {
+        nodesResult[node.id] = true;
+    }
     
-    return answer.join('');
+    for(let isDeletedNode of nodesResult) {
+        if(isDeletedNode) answer += 'X';
+        else answer += 'O';
+    }
+    
+    return answer;
 }
