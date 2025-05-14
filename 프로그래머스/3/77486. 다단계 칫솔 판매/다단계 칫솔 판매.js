@@ -1,60 +1,54 @@
+// 각 판매원의 이름을 담은 배열 enroll
+// 각 판매원을 다단계 조직에 참여시킨 다른 판매원의 이름을 담은 배열 referral
+// 판매량 집계 데이터의 판매원 이름을 나열한 배열 seller
+// 판매량 집계 데이터의 판매 수량을 나열한 배열 amount
 function solution(enroll, referral, seller, amount) {
-    // 칫솔 판매의 이익 10%는 추천인에게 배분, 나머지는 자신이 가짐
-    // 1원 미만인 경우 자신이 모두 가진다.
-    // 칫솔 판매 이익 100원
-    
-    // 판매원의 이름을 담은 배열 enroll
-    // 추천인의 배열 referral
-    // 판매량 데이터 판매원 이름 seller
-    // 판매 수량 amount
-    
     let answer = [];
-    let result = {
-        "center": {benefit: 0, referral: '-'}
-    };
+    const nodes = {};
     
-    enroll.forEach((p, idx) => {
-        result[p] = {benefit: 0, referral: referral[idx]};
-    })
-    
-    for(let [key, value] of Object.entries(result)) {
-        if(value.referral === '-' && key !== 'center') {
-            value.referral = 'center';
-        }
+    function Node(name, referral, profit) {
+        this.name = name;
+        this.referral = referral;
+        this.profit = profit;
     }
     
-    const dfs = (referral, benefit) => {
-        const money = Math.floor(benefit * 0.1);
+    for(let i = 0; i < enroll.length; i++) {
+        const recommender = referral[i];
+        const name = enroll[i];
         
-        if(result[referral].referral === '-') return;
+        const node = new Node(name, recommender, 0);
+        nodes[name] = node;
+    }
+    
+    const splitProceeds = (profit, node) => {
+        const sendProfit = Math.floor(profit * 0.1);
+        const myProfit = profit - sendProfit;
         
-        result[referral].benefit += (benefit - money); 
-        if(money < 1) {
-            result[referral].benefit += money;
+        if(sendProfit < 1) {
+            node.profit += profit;
         }
         else {
-            dfs(result[referral].referral, money);
+            node.profit += myProfit;
+            
+            if(node.referral !== '-') {
+                splitProceeds(sendProfit, nodes[node.referral]);
+            }
         }
     }
     
-    seller.forEach((p, idx) => {
-        const money = Math.floor(amount[idx] * 100 * 0.1);
-        result[p].benefit += amount[idx] * 100 - money;
+    // 판매금을 나눠서 전달
+    for(let i = 0; i < seller.length; i++) {
+        const sellerName = seller[i];
+        const sellAmount = amount[i];
         
-        if(result[p].referral === '-' || money < 1) {
-            result[p].benefit += money;
-        }
-        else {
-            dfs(result[p].referral, money);
-        }
+        const profit = sellAmount * 100;
+        splitProceeds(profit, nodes[sellerName]);
+    }
+    
+    enroll.forEach((name) => {
+        answer.push(nodes[name].profit);
     })
     
-    // console.log(result);
-    for(let [key, value] of Object.entries(result)) {
-        if(key !== 'center') {
-            answer.push(value.benefit);
-        }
-    }
     
     return answer;
 }
