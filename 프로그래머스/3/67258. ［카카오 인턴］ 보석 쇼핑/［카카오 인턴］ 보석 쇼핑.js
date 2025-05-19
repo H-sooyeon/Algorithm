@@ -1,28 +1,41 @@
 function solution(gems) {
     let answer = [1, gems.length];
-    const gemCnt = new Set(gems).size;
-
-    const map = new Map();
-    map.set(gems[0], 1);
+    const uniqueJewel = new Set(gems);
+    const jewelMap = new Map();
     
-    let l = 0, r = 0;
-    while(r < gems.length) {
-        if(gemCnt === map.size) {
-            if(r - l < answer[1] - answer[0]) {
-                answer = [l + 1, r + 1];
+    if(uniqueJewel.size === 1) {
+        return [1, 1];
+    }
+    
+    let startIdx = 0;
+    gems.forEach((gem, idx) => {
+        if(jewelMap.get(gem) !== undefined) {
+            jewelMap.set(gem, jewelMap.get(gem) + 1);
+            
+            // 앞에 거 확인
+            let deletedJewelIdx = startIdx;
+            for(let i = startIdx; i < idx; i++) {
+                const jewel = gems[i];
+                if(jewelMap.get(jewel) > 1) {
+                    jewelMap.set(jewel, jewelMap.get(jewel) - 1);
+                    deletedJewelIdx += 1;
+                }
+                else {
+                    startIdx = deletedJewelIdx;
+                    break;
+                }
             }
-            map.set(gems[l], map.get(gems[l]) - 1);
-            if(map.get(gems[l]) === 0) {
-                map.delete(gems[l]);
-            }
-            l++;
         }
         else {
-            r++;
-            const right = map.get(gems[r]);
-            map.set(gems[r], right ? right + 1 : 1);
+            jewelMap.set(gem, 1);
         }
-    }
+        
+        if(jewelMap.size === uniqueJewel.size) {
+            if(answer[1] - answer[0] > idx - startIdx) {
+                answer = [startIdx + 1, idx + 1];
+            }
+        }
+    })
     
     return answer;
 }
