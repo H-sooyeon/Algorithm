@@ -1,55 +1,48 @@
 function solution(user_id, banned_id) {
-    let answer = 0;
-    let banned_arr = Array.from(Array(banned_id.length), () => []);
+    const bannedIdLen = banned_id.length;
+    const bannedUserById = Array.from({length: bannedIdLen}, () => Array());
     
-    for(let i = 0; i < banned_id.length; i++) {
-        let starPos = [];
-        
-        for(let j = 0; j < banned_id[i].length; j++) {
-            if(banned_id[i][j] === '*') {
-                starPos.push(j);
+    // banned_id에 맞는 유저 리스트 찾기
+    for(let i = 0; i < user_id.length; i++) {
+        for(let j = 0; j < bannedIdLen; j++) {
+            if(user_id[i].length !== banned_id[j].length) continue;
+            
+            let isSame = true;
+            for(let k = 0; k < banned_id[j].length; k++) {
+                if(user_id[i][k] !== banned_id[j][k] && banned_id[j][k] !== '*') {
+                    isSame = false;
+                    break;
+                }
             }
-        }
-        
-        for(let j = 0; j < user_id.length; j++) {
-            let modifyUser = user_id[j].split('');
-            if(starPos[starPos.length - 1] <= modifyUser.length - 1) {
-                for(let k = 0; k < starPos.length; k++) {
-                    modifyUser[starPos[k]] = '*';
-                }
-                
-                modifyUser = modifyUser.join('');
-                if(modifyUser === banned_id[i]) {
-                    banned_arr[i].push(user_id[j]);
-                }
+            
+            if(isSame) {
+                bannedUserById[j].push(user_id[i]);
             }
         }
     }
     
-    const result = new Set();
-    const dfs = (selected, depth) => {
-        if(depth === banned_arr.length) {
-            // console.log(selected);
-            const sortSelected = [...selected].sort();
-            const set = new Set(sortSelected);
-            if(set.size === banned_id.length) {
-                result.add(Array.from(set).join(' '));
+    // bannedUserById 조합 찾기 (유니크)
+    const combinationArr = new Set();
+    const combination = (v, depth) => {
+        if(v.length === bannedIdLen) {
+            const set = new Set(v);
+            if(set.size === bannedIdLen) {
+                const copy = v.slice();
+                copy.sort((a, b) => a.localeCompare(b));
+                combinationArr.add(copy.join(' '));
             }
+            
             return;
         }
         
-        for(let i = 0; i < banned_arr[depth].length; i++) {
-            if(selected.includes(banned_arr[depth][i])) continue;
-            
-            selected.push(banned_arr[depth][i]);
-            dfs(selected, depth + 1);
-            selected.pop();
+        for(let i = 0; i < bannedUserById[depth].length; i++) {
+            v.push(bannedUserById[depth][i]);
+            combination(v, depth + 1);
+            v.pop();
         }
     }
     
-    for(let i = 0; i < banned_arr[0].length; i++) {
-        dfs([banned_arr[0][i]], 1);
-    }
-            
-    return result.size;
+    combination([], 0);
+        
+    return combinationArr.size;
 }
