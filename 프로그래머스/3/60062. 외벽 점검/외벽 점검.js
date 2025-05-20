@@ -1,82 +1,56 @@
 function solution(n, weak, dist) {
-    let answer = 987654321;
-    let arr = [];
-    let permutation_arr = [];
-    let permutation_list = [];
-    let visited = new Array(dist.length).fill(false);
-    dist.sort((a, b) => a - b);
+    let answer = Infinity;
+    const doubleWeak = [...weak];
+    const permutation = [];
+    const visited = new Array(dist.length).fill(false);
     
-    for(let i = 0; i < weak.length; i++) {
-        arr.push(weak[i]);
-    }
+    weak.forEach((pos) => doubleWeak.push(n + pos));
     
-    for(let i = 0; i < weak.length; i++) {
-        arr.push(weak[i] + n);
-    }
-    
-    for(let i = 0; i < dist.length; i++) {
-        permutation_arr.push(dist[i]);
-    }
-    
-    const dfs = (depth, selected) => {
-        if(depth === dist.length) {
-            let list = [];
-            for(let i of selected) list.push(permutation_arr[i]);
-            permutation_list.push(list);
-            
+    const Permutation = (v) => {
+        if(v.length === dist.length) {
+            permutation.push([...v]);
             return;
         }
         
-        for(let i = 0; i < permutation_arr.length; i++) {
+        for(let i = 0; i < dist.length; i++) {
             if(visited[i]) continue;
             
-            selected.push(i);
+            v.push(i);
             visited[i] = true;
-            dfs(depth + 1, selected);
-            selected.pop();
+            Permutation(v);
+            v.pop();
             visited[i] = false;
         }
     }
     
-    dfs(0, []);
+    Permutation([]);
     
-    const search = (dist) => {
-        
+    permutation.forEach((list) => {
         for(let t = 0; t < weak.length; t++) {
-        let cnt = 0;
-        
-        let dist_idx = dist.length - 1;
-        let sum = arr[t] + dist[dist_idx];
-        let idx = t;
-        
-        let dist_list = [dist[dist_idx]];
-        while(true) {
-            if(dist_idx < 0) {
-                break;
-            }
+            let save = [list[0]];
+            let weakPos = t;
+            let findWeakCnt = 0;
+            let friendIdx = 0;
+            let canMoveSum = dist[list[0]] + doubleWeak[t];
             
-            if(cnt === weak.length) {
-                answer = Math.min(dist_list.length, answer);
-                break;
+            while(friendIdx < dist.length && weakPos < doubleWeak.length) {
+                if(findWeakCnt === weak.length) {
+                    answer = Math.min(answer, save.length);
+                    break;
+                }
+                
+                if(canMoveSum < doubleWeak[weakPos]) {
+                    friendIdx += 1;
+                    canMoveSum = doubleWeak[weakPos] + dist[list[friendIdx]];
+                    save.push(friendIdx);
+                }
+                
+                weakPos += 1;
+                findWeakCnt += 1;
             }
-            
-            if(sum < arr[idx]) {
-                dist_idx--;
-                dist_list.push(dist[dist_idx]);
-                sum = arr[t + cnt] + dist[dist_idx];
-            }
-            
-            idx++;
-            cnt++;
         }
-    }
-    }
-        
-    for(let i = 0; i < permutation_list.length; i++) {
-        search(permutation_list[i]);
-    }
+    })
     
-    if(answer === 987654321) return -1;
-    
+    if(answer === Infinity) return -1;
     return answer;
 }
