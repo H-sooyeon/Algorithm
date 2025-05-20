@@ -23,10 +23,11 @@ function solution(stones, k) {
         
         if(empty >= k) {
             high = mid - 1;
+            answer = mid;
         }
         else {
             low = mid + 1;
-            answer = low;
+            // answer = low;
         }
     }
     
