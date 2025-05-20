@@ -1,34 +1,34 @@
 function solution(stones, k) {
     let answer = 0;
     
-    let left = 1;
-    let right = 200000000;
+    let low = 1;
+    let high = 200000000;
     
-    while(left <= right) {
-        let mid = Math.floor((left + right) / 2);
+    while(low <= high) {
+        const mid = Math.floor((low + high) / 2);
         
-        let cnt = 0;
-        // 연속으로 나오는 0 값이 얼마나 있는지 확인
+        let empty = 0;
         for(let i = 0; i < stones.length; i++) {
-            if(cnt >= k) break;
             if(stones[i] - mid <= 0) {
-                cnt++;
+                empty += 1;
             }
             else {
-                cnt = 0;
+                empty = 0;
+            }
+            
+            if(empty >= k) {
+                break;
             }
         }
         
-        if(cnt >= k) {
-            right = mid - 1;
-            answer = mid;
+        if(empty >= k) {
+            high = mid - 1;
         }
         else {
-            left = mid + 1;
+            low = mid + 1;
+            answer = low;
         }
     }
-    
-    // console.log(answer);
     
     return answer;
 }
