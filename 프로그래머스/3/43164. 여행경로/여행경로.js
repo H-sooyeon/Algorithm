@@ -1,56 +1,56 @@
 function solution(tickets) {
     let answer = [];
-    let set = new Set();
-    let arr = {};
-    let visited = {};
+    const requireVisitedCityCnt = tickets.length;
+    const city = new Map();
     
-    for(let i = 0; i < tickets.length; i++) {
-        set.add(tickets[i][0]);
-        set.add(tickets[i][1]);
+    tickets.forEach((ticket, idx) => {
+        const [start, arrive] = ticket;
         
-        if(arr[tickets[i][0]]) {
-            arr[tickets[i][0]].push(tickets[i][1]);
+        const list = city.get(start);
+        if(list) {
+            list.push([arrive, idx]);
+            city.set(start, list);
         }
         else {
-            arr[tickets[i][0]] = [tickets[i][1]];
+            city.set(start, [[arrive, idx]]);
         }
-    }
-    
-    const keys = Object.keys(arr);
-    
-    for(let s of set) {
-        if(!keys.includes(s)) {
-            arr[s] = [];
-            keys.push(s);
-        }
-    }
-    
-    for(let i = 0; i < keys.length; i++) {
-        visited[keys[i]] = new Array(arr[keys[i]].length).fill(false);
-    }
-    
-    const dfs = (selected, start) => {
-        if(selected.length === tickets.length + 1) {
-            answer.push([...selected]);
+    })
+        
+    const dfs = (current, depth, list, visited) => {
+        if(depth === requireVisitedCityCnt) {
+            if(answer.length === 0) {
+                answer = [...list];
+            }
+            else {
+                for(let i = 0; i < list.length; i++) {
+                    if(answer[i] === list[i]) continue;
+                    let tmp = [answer[i], list[i]];
+                    
+                    tmp.sort((a, b) => a.localeCompare(b));
+                    if(tmp[0] === list[i]) {
+                        answer = [...list];
+                        break;
+                    }
+                    else break;
+                }
+            }
             return;
         }
         
-        for(let i = 0; i < arr[start].length; i++) {
-            if(visited[start][i]) continue;
+        if(!city.get(current)) return;
+        
+        for(let [next, idx] of city.get(current)) {
+            if(visited[idx]) continue;
             
-            selected.push(arr[start][i]);
-            visited[start][i] = true;
-            dfs(selected, arr[start][i]);
-            selected.pop();
-            visited[start][i] = false;
+            list.push(next);
+            visited[idx] = true;
+            dfs(next, depth + 1, list, visited);
+            list.pop();
+            visited[idx] = false;
         }
     }
     
-    dfs(['ICN'], 'ICN');
+    dfs('ICN', 0, ['ICN'], new Array(tickets.length).fill(false));
     
-    if(answer.length === 1) return answer[0];
-    
-    answer.sort();
-    
-    return answer[0];
+    return answer;
 }
