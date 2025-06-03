@@ -1,85 +1,65 @@
 function solution(nodeinfo) {
-    const Node = function(value, x, y) {
-        this.value = value;
+    let answer = [[]];
+    const copy = nodeinfo.map((node, idx) => [idx+1, ...node]);
+    
+    copy.sort((a, b) => {
+        if(a[2] === b[2]) {
+            return a[1] - b[1];
+        }
+        return b[2] - a[2]
+    })
+        
+    function Node (idx, x, y, left, right) {
+        this.idx = idx;
         this.x = x;
         this.y = y;
-        
-        this.parent = null;
-        this.left = null;
-        this.right = null;
+        this.left = left;
+        this.right = right;
     }
     
-    const addNode = (parent, child) => {
-        if(child.x < parent.x) {
-            if(!parent.left) {
-                parent.left = child;
-                child.parent = parent;
+    const [rootIdx, rootX, rootY] = copy[0];
+    const root = new Node(rootIdx, rootX, rootY, null, null);
+    
+    const findPos = (parent, node) => {
+        if(parent.x < node.x) {
+            if(parent.right) {
+                findPos(parent.right, node);
+                return;
             }
-            else {
-                addNode(parent.left, child);
+            parent.right = node;
+        }
+        else if(parent.x > node.x) {
+            if(parent.left) {
+                findPos(parent.left, node);
+                return;
             }
-        }
-        else {
-            if(!parent.right) {
-                parent.right = child;
-                child.parent = parent;
-            }
-            else {
-                addNode(parent.right, child);
-            }
+            parent.left = node;
         }
     }
     
-    let answer = [];
-    let nodes = [];
-    let preNodes = [];
-    let postNodes = [];
-    
-    for(let i = 0; i < nodeinfo.length; i++) {
-        let node = new Node(i + 1, nodeinfo[i][0], nodeinfo[i][1]);
-        nodes.push(node);
-    }
-        
-    // y를 기준으로 내림차순 정렬
-    nodes.sort((a, b) => {
-        if(a.y === b.y) {
-            return a.x - b.x;
-        }
-        return b.y - a.y;
-    });
-    
-    let root = nodes[0];
-    for(let i = 1; i < nodes.length; i++) {
-        addNode(root, nodes[i]);
+    for(let i = 1; i < copy.length; i++) {
+        const [idx, x, y] = copy[i];
+        const node = new Node(idx, x, y, null, null);
+        findPos(root, node);
     }
     
-    const preOrder = (node) => {
-        preNodes.push(node.value);
-        
-        if(node.left) {
-            preOrder(node.left);
-        }
-        if(node.right) {
-            preOrder(node.right);
-        }
+    const preorderList = [];
+    const postorderList = [];
+    
+    const preorder = (node) => {
+        preorderList.push(node.idx);
+        if(node.left) preorder(node.left);
+        if(node.right) preorder(node.right);
     }
     
-    const postOrder = (node) => {
-        if(node.left) {
-            postOrder(node.left);
-        }
-        if (node.right) {
-            postOrder(node.right);
-        }
-        
-        postNodes.push(node.value);
+    const postorder = (node) => {
+        if(node.left) postorder(node.left);
+        if(node.right) postorder(node.right);
+        postorderList.push(node.idx);
     }
     
-    preOrder(root);
-    postOrder(root);
+    preorder(root);
+    postorder(root);
     
-    answer.push(preNodes);
-    answer.push(postNodes);
-    
-    return answer;
+    return [preorderList, postorderList];
 }
