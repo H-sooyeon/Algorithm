@@ -1,23 +1,45 @@
 function solution(m, n, puddles) {
-  const MOD = 1_000_000_007;
-  // n행 m열 배열 생성
-  const dp = Array.from({ length: n }, () => Array(m).fill(0));
-
-  dp[0][0] = 1;
-  for (let i = 0; i < n; i++) {
-    for (let j = 0; j < m; j++) {
-      if (i === 0 && j === 0) continue;
-        // 인덱스 값을 기준으로 보기에 사실상 x === j, y === i의 좌표와 같은 맥락
-        // 물 웅덩이에 빠진 경우 해당 경로 값 0으로 초기화
-      if (puddles.some(([x, y]) => x === j + 1 && y === i + 1)) {
-        dp[i][j] = 0;
-      } else {
-        // x, y이동에 필요한 걸음 % MOD(문제에서 제시)
-        dp[i][j] = ((i > 0 ? dp[i - 1][j] : 0) + (j > 0 ? dp[i][j - 1] : 0)) % MOD;
-      }
+    const INF = 987654321;
+    const MOD = 1000000007;
+    let dp = Array.from({length: n}, () => Array(m));
+    
+    for(let i = 0; i < n; i++) {
+        for(let j = 0; j < m; j++) {
+            dp[i][j] = [0, INF];
+        }
     }
-  }
-
-    // 우측 하단까지 필요한 경로 수 반환
-  return dp[n - 1][m - 1];
+    
+    const dy = [0, 1];
+    const dx = [1, 0];
+    
+    dp[0][0] = [0, 0];
+    
+    puddles.forEach(([x, y]) => {
+        dp[y - 1][x - 1] = -1;
+    })
+    
+    for(let i = 0; i < n; i++) {
+        for(let j = 0; j < m; j++) {
+            if(dp[i][j] === -1) continue;
+            for(let k = 0; k < 2; k++) {
+                let ny = i + dy[k];
+                let nx = j + dx[k];
+                                
+                if(ny >= n || nx >= m) continue;
+                if(dp[ny][nx] === -1) continue;
+                
+                if(dp[ny][nx][1] > dp[i][j][1] + 1) {
+                    dp[ny][nx][1] = dp[i][j][1] + 1;
+                    dp[ny][nx][0] = (dp[i][j][0] ? dp[i][j][0] : 1) % MOD;
+                }
+                else if(dp[ny][nx][1] === dp[i][j][1] + 1) {
+                    dp[ny][nx][0] = (dp[ny][nx][0] + dp[i][j][0]) % MOD;
+                }
+            }
+        }
+    }
+    
+    // console.log(dp);
+    
+    return dp[n-1][m-1][0] % MOD;
 }
