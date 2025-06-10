@@ -1,47 +1,34 @@
 function solution(genres, plays) {
     let answer = [];
-    let map = new Map();
-    let scores = {};
+    const album = {};
+    const playCnt = {};
     
-    for(let i = 0; i < genres.length; i++) {
-        if(map.has(genres[i])) {
-            let value = map.get(genres[i]);
-            let score = scores[genres[i]]
-            
-            value.push([plays[i], i]);
-            score += plays[i];
-            
-            map.set(genres[i], value);
-            scores[genres[i]] = score;
+    genres.forEach((genre, idx) => {
+        if(album[genre] === undefined) {
+            playCnt[genre] = plays[idx];
+            album[genre] = [[idx, plays[idx]]];
         }
         else {
-            map.set(genres[i], [[plays[i], i]]);
-            scores[genres[i]] = plays[i];
+            playCnt[genre] += plays[idx];
+            album[genre].push([idx, plays[idx]]);
         }
+    })
+    
+    const playCntArr = [];
+    for(let [key, value] of Object.entries(playCnt)) {
+        playCntArr.push([key, value]);
     }
+    playCntArr.sort((a, b) => b[1] - a[1]);
     
-    let result = [];
-    for(let [key, value] of map.entries()) {
-        let arr = value.sort((a, b) => b[0] - a[0]);
-        result.push([arr.length, arr]);
-        map.set(key, arr);
-    }
-    
-    // console.log(map);
-
-    const sortable = Object.entries(scores).sort(([, a], [, b]) => b - a)
-    result.sort((a, b) => b[0] - a[0]);
-    
-    for(let i = 0; i < sortable.length; i++) {
-        let key = sortable[i][0];
-        let arr = map.get(key);
+    playCntArr.forEach(([genre, cnt]) => {
+        const genrePlayList = album[genre];
+        genrePlayList.sort((a, b) => b[1] - a[1]);
         
-        if(arr.length < 2) answer.push(arr[0][1]);
-        else {
-            answer.push(arr[0][1], arr[1][1]);
-        }
-    }
-    // console.log(sortable);
+        genrePlayList.forEach((play, idx) => {
+            if(idx >= 2) return;
+            answer.push(play[0]);
+        })
+    })
     
     return answer;
 }
