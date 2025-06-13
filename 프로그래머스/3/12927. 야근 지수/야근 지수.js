@@ -112,5 +112,5 @@ function solution(n, works) {
         answer += Math.pow(queue.deq(), 2);
     }
     
-    return answer;
+    return answer; 
 }
