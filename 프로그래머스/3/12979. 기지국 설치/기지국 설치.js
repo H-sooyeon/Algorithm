@@ -1,56 +1,25 @@
 function solution(n, stations, w) {
     let answer = 0;
-    let arr = [];
+    let idx = 1;
+    const divide = 2 * w + 1;
     
-    let idx = 0;
-    for(let i = 0; i < stations.length; i++) {
-        let start = stations[i] - w;
-        let end = stations[i] + w;
+    stations.forEach((station) => {
+        let left = station - w - 1;
+        let right = station + w + 1;
         
-        if(end > n) end = n;
-        if(start < 1) start = 1;
+        const range = left - idx + 1;
+        const cnt = Math.ceil(range / divide);
+        answer += cnt;
         
-        // 겹치는 구간이 있는지 체크
-        if(idx !== 0) {
-            let [prev_start, prev_end] = arr[idx - 1];
-            
-            if(prev_end >= start || prev_end === start - 1) {
-                // 겹치는 구간이 있다면 겹치기
-                arr[idx - 1] = [prev_start, end];
-            }
-            else {
-                arr.push([start, end]);
-                idx++;
-                
-                if(idx !== 1) {
-                    let range = arr[idx - 1][0] - arr[idx - 2][1] - 1;
-                    answer += Math.ceil(range / (w * 2 + 1));
-                }
-                else {
-                    let range = arr[idx - 1][0] - 1;
-                    answer += Math.ceil(range / (w * 2 + 1));
-                }
-            }
-        }
-        else {
-            arr.push([start, end]);
-            idx++;
-            
-            if(idx !== 1) {
-                let range = arr[idx - 1][0] - arr[idx - 2][1] - 1;
-                answer += Math.ceil(range / (w * 2 + 1));
-            }
-            else {
-                let range = arr[idx - 1][0] - 1;
-                answer += Math.ceil(range / (w * 2 + 1));
-            }
-        }
-    };
+        idx = right;
+    })
     
-    // console.log(arr);
-    if(arr[arr.length - 1][1] < n) {
-        answer += Math.ceil((n - arr[arr.length - 1][1]) / (w * 2 + 1));
+    if(idx <= n) {
+        const lastStation = stations[stations.length - 1];
+        const right = lastStation + w + 1;
+        const range = n - right + 1;
+        answer += Math.ceil(range / divide)
     }
-    
+
     return answer;
 }
