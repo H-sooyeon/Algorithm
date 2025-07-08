@@ -1,77 +1,78 @@
 function solution(info, query) {
     let answer = [];
-    let map = new Map();
+    const map = new Map();
     
     info.forEach((v, idx) => {
-        let [lang, field, career, food, score] = v.split(' ');
-        let key = `${lang}-${field}-${career}-${food}`;
-        if(map.get(key)) {
+        const [lang, field, career, food, score] = v.split(' ');
+        const key = `${lang}-${field}-${career}-${food}`;
+        
+        if(map.has(key)) {
             map.set(key, [...map.get(key), +score]);
-        } else {
+        }
+        else {
             map.set(key, [+score]);
         }
     })
     
-    for(let [key, value] of map.entries()) {
+    for(let [key, value] of map) {
         map.set(key, value.sort((a, b) => a - b));
     }
     
-    const binarySearch = (list, value) => {
-        let start = 0;
-        let end = list.length;
+    const targetCnt = (target, score) => {
+        let left = 0;
+        let right = target.length;
         
-        while(start <= end) {
-            let mid = Math.floor((start + end) / 2);
+        while(left <= right) {
+            let mid = Math.floor((left + right) / 2);
             
-            if(list[mid] < value) {
-                start = mid + 1;
+            if(score > target[mid]) {
+                left = mid + 1;
             }
             else {
-                end = mid - 1;
+                right = mid - 1;
             }
         }
         
-        return list.length - start;
+        return target.length - left;
     }
     
     const separatedQuery = (query) => {
         let q = query.split(' and ');
-        let last = q[q.length - 1].split(' ');
-        q = [...q.slice(0, -1), ...last];
-        let [lang, field, career, food, score] = q;
+        let last = q.pop();
+        let [food, score] = last.split(' ');
+        let [lang, field, career] = q;
         
-        lang = lang === '-' ? ['java', 'python', 'cpp'] : [lang];
-        field = field === '-' ? ['frontend', 'backend'] : [field];
+        lang = lang === '-' ? ['cpp', 'java', 'python'] : [lang];
+        field = field === '-' ? ['backend', 'frontend'] : [field];
         career = career === '-' ? ['junior', 'senior'] : [career];
-        food = food === '-' ? ['pizza', 'chicken'] : [food];
-                
-        let ret = [];
+        food = food === '-' ? ['chicken', 'pizza'] : [food];
+        
+        let result = [];
         for(let la of lang) {
             for(let fi of field) {
                 for(let ca of career) {
                     for(let fo of food) {
-                        let key = `${la}-${fi}-${ca}-${fo}`;
-                        ret.push([key, +score]);
+                        const key = `${la}-${fi}-${ca}-${fo}`;
+                        result.push([key, +score]);
                     }
                 }
             }
         }
-        return ret;
+        
+        return result;
     }
     
-    
-    const ret = query.map(q => {
+    query.forEach((q) => {
         const newQueryList = separatedQuery(q);
         let sum = 0;
         
-        for(const [newQuery, score] of newQueryList) {
-            const list = map.get(newQuery);
-            sum += list ? binarySearch(list, score) : 0;
+        for(let [newQuery, score] of newQueryList) {
+            let list = map.get(newQuery);
+            
+            sum += list ? targetCnt(list, score) : 0;
         }
-        
         answer.push(sum);
     })
-    
     
     return answer;
 }
