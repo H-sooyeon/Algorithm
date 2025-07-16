@@ -100,20 +100,16 @@ function solution(scoville, K) {
     
     let minV1, minV2;
     
-    while(true) {
-        if(pq.size() >= 2) {
-            minV1 = pq.deq();
-            minV2 = pq.deq();
+    while(pq.size() > 1) {
+        minV1 = pq.deq();
+        minV2 = pq.deq();
             
-            if(minV1 >= K) break;
+        if(minV1 >= K) break;
             
-            pq.enq(minV1 + minV2 * 2);
-            answer++;
-        } else {
-            if(pq.peek() > K) return answer;
-            else return -1;
-        }
+        pq.enq(minV1 + minV2 * 2);
+        answer++;
     }
     
+    if(pq.size() && pq.peek() < K) return -1
     return answer;
 }
