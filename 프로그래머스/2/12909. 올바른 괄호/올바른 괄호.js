@@ -1,22 +1,14 @@
 function solution(s){
     let answer = true;
 
-    const arr = s.split('');
-    const stack = [];
-    
-    for(let value of arr) {
-        if(stack.length === 0) {
-            stack.push(value);
-            continue;
-        }
+    let result = 0;
+    for(let v of s) {
+        result += v === '(' ? 1 : -1;
         
-        const lastValue = stack.pop();
-        if(!(lastValue === '(' && value === ')')) {
-            stack.push(lastValue, value);
-        } 
+        if(result < 0) return false;
     }
     
-    if(stack.length > 0) answer = false;
+    if(result !== 0) return false;
 
     return answer;
 }
