@@ -7,8 +7,7 @@ function solution(s) {
         cur = cur.replaceAll('0', '');
         answer[1] += prev.length - cur.length;
         
-        const toBinaryLen = cur.length;
-        cur = toBinaryLen.toString(2);
+        cur = cur.length.toString(2);
         
         prev = cur;
         answer[0] += 1;
