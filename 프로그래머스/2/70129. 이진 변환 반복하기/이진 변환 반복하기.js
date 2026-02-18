@@ -1,13 +1,17 @@
 function solution(s) {
     let answer = [0, 0];
-
-    while(s !== '1') {
-        s = s.split('').filter((v) => {
-            if(v === '0') answer[1]++;
-            return v !== '0';
-        });
-        s = s.length.toString(2);
-        answer[0]++;
+    
+    let cur = s;
+    let prev = cur;
+    while(cur !== '1') {
+        cur = cur.replaceAll('0', '');
+        answer[1] += prev.length - cur.length;
+        
+        const toBinaryLen = cur.length;
+        cur = toBinaryLen.toString(2);
+        
+        prev = cur;
+        answer[0] += 1;
     }
     
     return answer;
