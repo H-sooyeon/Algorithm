@@ -25,18 +25,12 @@ function solution(s) {
         }
         
         
-        if(cnt > 1) {
-            makedStr += `${cnt}${target}`;
-        }
-        else {
-            idx = idx - i;
-        }
+        if (cnt > 1) makedStr += cnt + target;
+        else makedStr += target;
         
         makedStr += s.slice(idx);
         
-        if(makedStr.length < answer) {
-            answer = makedStr.length;
-        }
+        answer = Math.min(makedStr.length, answer);
     }
     
     return answer;
