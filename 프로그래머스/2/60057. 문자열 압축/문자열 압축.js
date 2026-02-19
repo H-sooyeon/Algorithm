@@ -1,29 +1,42 @@
 function solution(s) {
     let answer = s.length;
     
-    for(let i = 1; i < s.length; i++) {
-        let word = s.slice(0, i);
+    for(let i = 1; i <= s.length / 2; i++) {
+        let makedStr = '';
+        let cnt = 1; // 현재 압축 문자열을 포함하도록 초기값 설정
+        let idx = i;
         
-        let cnt = 0;
-        let tmp = '';
-        for(let j = word.length; j < s.length; j++) {
-            if(word === s.slice(j, word.length + j)) {
-                cnt++;
+        let target = s.slice(0, i);
+        while(idx <= s.length - 1) {
+            const cur = s.slice(idx, idx + i);
+            
+            if(target === cur) {
+                cnt += 1;
             }
             else {
-                if(cnt) tmp += word + (cnt + 1);
-                else tmp += word;
-                cnt = 0;
-                word = s.slice(j, word.length + j);
+                if(cnt < 2) makedStr += target;
+                else makedStr += `${cnt}${target}`;
+
+                target = cur;
+                cnt = 1;
             }
-            j += word.length - 1;
+            
+            idx += i;
         }
         
-        if(cnt) tmp += word + (cnt + 1);
-        else tmp += word;
         
-        answer = Math.min(answer, tmp.length);
-        // console.log(tmp);
+        if(cnt > 1) {
+            makedStr += `${cnt}${target}`;
+        }
+        else {
+            idx = idx - i;
+        }
+        
+        makedStr += s.slice(idx);
+        
+        if(makedStr.length < answer) {
+            answer = makedStr.length;
+        }
     }
     
     return answer;
