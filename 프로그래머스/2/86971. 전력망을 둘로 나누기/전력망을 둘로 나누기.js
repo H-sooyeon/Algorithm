@@ -1,55 +1,47 @@
 function solution(n, wires) {
-    let min_value = [];
-    let linked_list = Array.from({length: n + 1}, () => []);
+    let answer = n;
     
-    // let node_max = 0;
-    // let node_max_list = [];
-    for(let i = 0; i < wires.length; i++) {
-        let [v1, v2] = wires[i];
-        linked_list[v1].push(v2);
-        linked_list[v2].push(v1);
-        
-        // node_max = Math.max(node_max, linked_list[v1].length);
-        // node_max = Math.max(node_max, linked_list[v2].length);
-    }
+    /*
+    * wires를 연결 리스트화
+    * 완전탐색으로 전선을 하나씩 끊어서 dfs 탐색
+    */
     
-    // for(let i = 1; i < linked_list.length; i++) {
-    //     if(linked_list[i].length === node_max)
-    //         node_max_list.push(i);
-    // }
+    const dfs = (visited, adj, node) => {
+        visited[node] = true;
+        let cnt = 1;
         
-    let visited = new Array(n+1).fill(false);
-    let set = new Set(); // 노드 세는 set
-    
-    const nodeCnt = (node_num) => {
-        set.add(node_num);
-        visited[node_num] = true;
-        
-        for(let node of linked_list[node_num]) {
-            if(visited[node]) continue;
-            nodeCnt(node);
-        }
-    }
-    
-    let node_dif = 987654321; // 끊은 노드들의 차이
-    linked_list.forEach((node_max_list, idx) => {
-        for(let node of node_max_list) {
-            visited.fill(false);
-            visited[node] = true;
-        
-            for(let linked_node of linked_list[node]) {
-                nodeCnt(linked_node);
-                node_dif = Math.min(node_dif, Math.abs(set.size - (n - set.size)));
+        for(let next of adj[node]) {
+            if(visited[next]) continue;
             
-                set.clear();
-                visited.fill(false);
-                visited[node] = true;   
-            }
+            cnt += dfs(visited, adj, next);
         }
-    })
-  
+        
+        return cnt;
+    }
     
-    // console.log(node_dif);
+    for(let t = 0; t < wires.length; t++) {
+        const adj = Array.from(Array(n + 1), () => new Array());
+        const visited = new Array(n + 1).fill(false);
     
-    return node_dif;
+        for(let i = 0; i < wires.length; i++) {
+            if(t === i) continue;
+            
+            const [v1, v2] = wires[i];
+            adj[v1].push(v2);
+            adj[v2].push(v1);
+        }
+        
+        const results = [];
+        const [v1, v2] = wires[t];
+        
+        results.push(dfs(visited, adj, v1));
+        results.push(dfs(visited, adj, v2));
+        
+        if(results[0] + results[1] !== n) continue;
+        
+        answer = Math.min(answer, Math.abs(results[0] - results[1]));
+    }
+    
+    
+    return answer;
 }
