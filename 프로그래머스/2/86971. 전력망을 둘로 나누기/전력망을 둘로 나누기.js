@@ -1,47 +1,45 @@
 function solution(n, wires) {
-    let answer = n;
-    
-    /*
-    * wires를 연결 리스트화
-    * 완전탐색으로 전선을 하나씩 끊어서 dfs 탐색
-    */
-    
-    const dfs = (visited, adj, node) => {
-        visited[node] = true;
-        let cnt = 1;
+    let minDifference = n; // 최솟값을 저장할 변수
+
+    // 1. wires를 하나씩 순회하며 끊어봄
+    for (let i = 0; i < wires.length; i++) {
+        const graph = Array.from({ length: n + 1 }, () => []);
         
-        for(let next of adj[node]) {
-            if(visited[next]) continue;
-            
-            cnt += dfs(visited, adj, next);
+        // i번째 와이어만 제외하고 그래프 생성
+        const currentWires = wires.filter((_, index) => index !== i);
+        for (const [u, v] of currentWires) {
+            graph[u].push(v);
+            graph[v].push(u);
         }
+
+        // 2. BFS/DFS로 연결된 노드 수 계산
+        const count = getNodesCount(1, graph, n);
+        const diff = Math.abs(count - (n - count));
         
-        return cnt;
+        // 3. 차이의 최솟값 업데이트
+        minDifference = Math.min(minDifference, diff);
     }
     
-    for(let t = 0; t < wires.length; t++) {
-        const adj = Array.from(Array(n + 1), () => new Array());
-        const visited = new Array(n + 1).fill(false);
+    return minDifference;
+}
+
+// 연결된 노드의 수를 세는 BFS 함수
+function getNodesCount(startNode, graph, n) {
+    const visited = new Array(n + 1).fill(false);
+    const queue = [startNode];
+    visited[startNode] = true;
+    let count = 0;
     
-        for(let i = 0; i < wires.length; i++) {
-            if(t === i) continue;
-            
-            const [v1, v2] = wires[i];
-            adj[v1].push(v2);
-            adj[v2].push(v1);
+    while (queue.length > 0) {
+        const node = queue.shift();
+        count++;
+        
+        for (const neighbor of graph[node]) {
+            if (!visited[neighbor]) {
+                visited[neighbor] = true;
+                queue.push(neighbor);
+            }
         }
-        
-        const results = [];
-        const [v1, v2] = wires[t];
-        
-        results.push(dfs(visited, adj, v1));
-        results.push(dfs(visited, adj, v2));
-        
-        if(results[0] + results[1] !== n) continue;
-        
-        answer = Math.min(answer, Math.abs(results[0] - results[1]));
     }
-    
-    
-    return answer;
+    return count;
 }
