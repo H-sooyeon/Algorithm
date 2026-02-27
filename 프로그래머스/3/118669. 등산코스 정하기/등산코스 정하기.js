@@ -1,83 +1,101 @@
-class Queue {
+class MinHeap {
     constructor() {
-        this.items = {};
-        this.head = 0;
-        this.tail = 0;
+        this.heap = [];
     }
-    push(item) {
-        this.items[this.tail] = item;
-        this.tail += 1;
+    push(value) {
+        this.heap.push(value);
+        this.bubbleUp();
     }
     pop() {
-        delete this.items[this.head];
-        this.head += 1;
+        if(this.heap.length === 1) return this.heap.pop();
+        const top = this.heap[0];
+        this.heap[0] = this.heap.pop();
+        this.bubbleDown();
+        return top;
     }
-    size() {
-        return this.tail - this.head;
+    bubbleUp() {
+        let index = this.heap.length - 1;
+        while(index > 0) {
+            const parentIndex = Math.floor((index - 1) / 2);
+            if(this.heap[parentIndex][0] <= this.heap[index][0]) break;
+            [this.heap[parentIndex], this.heap[index]] = [this.heap[index], this.heap[parentIndex]];
+            index = parentIndex;
+        }
     }
-    front() {
-        return this.items[this.head];
+    bubbleDown() {
+        let index = 0;
+        const length = this.heap.length;
+        while(true) {
+            let left = index * 2 + 1;
+            let right = index * 2 + 2;
+            let smallest = index;
+            
+            if(left < length && this.heap[left][0] < this.heap[smallest][0]) smallest = left;
+            if(right < length && this.heap[right][0] < this.heap[smallest][0]) smallest = right;
+            if(smallest === index) break;
+            
+            [this.heap[smallest], this.heap[index]] = [this.heap[index], this.heap[smallest]];
+            index = smallest;
+        }
+    }
+    isEmpty() {
+        return this.heap.length === 0;
     }
 }
 
 function solution(n, paths, gates, summits) {
-    let answer = []; // 산봉우리의 번호, intensity 최솟값
-    // path: 등산로 정보, gates: 출입구 번호, summits: 산봉우리
-    const graph = Array.from({length: n + 1}, () => Array());
-    const nodes = new Array(n + 1).fill(0); // 1이면 출입로, 2이면 산봉우리
-    let minSummit = 50001;
-    let minValue = 10000001;
-    
-    for(const path of paths) {
-        const [i, j, w] = path;
-        
-        graph[i].push([j, w]);
-        graph[j].push([i, w]);
+    const graph = Array.from({ length: n + 1 }, () => []);
+    for (const [a, b, w] of paths) {
+        graph[a].push([b, w]);
+        graph[b].push([a, w]);
     }
-    
-    gates.forEach((gate) => nodes[gate] = 1);
-    summits.forEach((summit) => nodes[summit] = 2);
-    
-    const bfs = (gate) => {
-        const visited = new Array(n + 1).fill(0);
-        const queue = new Queue();
+
+    // 봉우리 여부를 빠르게 확인하기 위한 Set
+    const isSummit = new Array(n + 1).fill(false);
+    for (const s of summits) isSummit[s] = true;
+
+    // intensity를 저장할 배열 (최솟값을 찾아야 하므로 INF로 초기화)
+    const INF = Infinity;
+    const intensity = new Array(n + 1).fill(INF);
+    const pq = new MinHeap(); // 기존에 작성하신 MinHeap 사용
+
+    // 모든 출입구를 시작점으로 한꺼번에 넣기 (Multi-source Dijkstra)
+    for (const gate of gates) {
+        intensity[gate] = 0;
+        pq.push([0, gate]);
+    }
+
+    while (!pq.isEmpty()) {
+        const [dist, now] = pq.pop();
+
+        // 현재 봉우리에 도달했다면 더 이상 이동하지 않음 (규칙)
+        if (isSummit[now]) continue;
         
-        queue.push([gate, 0]);
-        while(queue.size() > 0) {
-            const [cur, cost] = queue.front();
-            queue.pop();
-            
-            if(minValue < cost) continue;
-            
-            for(let [next, time] of graph[cur]) {
-                const intensity = Math.max(time, cost);
-                
-                // 출입로라면
-                if(nodes[next] === 1) continue;
-                // 산봉우리라면
-                if(nodes[next] === 2) {
-                    if(minValue > intensity) {
-                        minValue = intensity;
-                        minSummit = next;
-                    }
-                    else if(minValue === intensity && minSummit > next) {
-                        minSummit = next;
-                    }
-                }
-                
-                if(nodes[next] === 0) {
-                    if(visited[next] === 0 || visited[next] > intensity) {
-                        visited[next] = intensity;
-                        queue.push([next, intensity]);
-                    }
-                }
+        // 이미 더 작은 intensity로 방문했다면 패스
+        if (intensity[now] < dist) continue;
+
+        for (const [next, weight] of graph[now]) {
+            // 이번 경로의 intensity는 (지금까지의 max intensity)와 (현재 간선) 중 큰 값
+            const nextIntensity = Math.max(dist, weight);
+
+            if (nextIntensity < intensity[next]) {
+                intensity[next] = nextIntensity;
+                pq.push([nextIntensity, next]);
             }
         }
     }
-    
-    for(let gate of gates) {
-        bfs(gate);
+
+    // 결과 구하기: 봉우리 번호가 낮은 순, intensity가 낮은 순
+    summits.sort((a, b) => a - b);
+    let minIntensity = INF;
+    let resultSummit = -1;
+
+    for (const s of summits) {
+        if (intensity[s] < minIntensity) {
+            minIntensity = intensity[s];
+            resultSummit = s;
+        }
     }
-        
-    return [minSummit, minValue];
+
+    return [resultSummit, minIntensity];
 }
