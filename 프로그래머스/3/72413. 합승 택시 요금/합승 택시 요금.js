@@ -1,34 +1,33 @@
 function solution(n, s, a, b, fares) {
     const INF = Number.MAX_SAFE_INTEGER;
-    const graph = Array.from({length: n + 1}, () => Array(n + 1).fill(INF));
     let answer = INF;
     
-    fares.forEach((fare) => {
-        const [c, d, f] = fare;
-        graph[c][d] = f;
-        graph[d][c] = f;
-    })
+    const dp = Array.from({length: n + 1}, () => new Array(n + 1).fill(INF));
     
-    for(let i = 1; i <= n; i++) {
-        graph[i][i] = 0;
+    for(let fare of fares) {
+        const [v1, v2, cost] = fare;
+        dp[v1][v2] = cost;
+        dp[v2][v1] = cost;
     }
-
+    
+    // 자기 자신으로 가는 최단 경로는 0
+    for(let i = 1; i <= n; i++) {
+        dp[i][i] = 0;
+    }
+    
+    // 플로이드 워셜
     for(let k = 1; k <= n; k++) {
-        for(let i = 1; i <= n; i++) {
-            for(let j = 1; j <= n; j++) {
-                if(i === j) continue;
-                
-                const cost = graph[i][k] + graph[k][j];
-                graph[i][j] = Math.min(cost, graph[i][j]);
+        for(let a = 1; a <= n; a++) {
+            for(let b = 1; b <= n; b++) {
+                dp[a][b] = Math.min(dp[a][b], dp[a][k] + dp[k][b]);
             }
         }
     }
     
     for(let i = 1; i <= n; i++) {
-        const cost = graph[s][i] + graph[i][a] + graph[i][b];
-        answer = Math.min(answer, cost);
-       
+        if(s === i) continue;
+        answer = Math.min(answer, dp[s][a] + dp[s][b], dp[s][i] + dp[i][a] + dp[i][b]);
     }
-        
+            
     return answer;
 }
