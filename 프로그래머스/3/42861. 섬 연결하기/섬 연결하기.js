@@ -1,41 +1,36 @@
 function solution(n, costs) {
     let answer = 0;
     const parents = new Array(n);
-    const copy = costs.map((cost) => [...cost]);
-    
-    copy.sort((a, b) => a[2] - b[2]);
     
     for(let i = 0; i < n; i++) {
         parents[i] = i;
     }
-        
-    const findParents = (x) => {
-        const parent = parents[x];
-        
-        if(parent !== x) return parents[x] = findParents(parent);
-        return x;
+    
+    const findParent = (x) => {
+        if(parents[x] === x) return x;
+        return parents[x] = findParent(parents[x]);
     }
     
-    const unionParents = (a, b) => {
-        const aP = findParents(a);
-        const bP = findParents(b);
+    const unionParent = (a, b) => {
+        const parentA = findParent(a);
+        const parentB = findParent(b);
         
-        if(aP > bP) {
-            parents[aP] = bP;
-        }
-        else if(aP < bP) {
-            parents[bP] = aP;
-        }
+        if(parentA < parentB) parents[parentB] = parentA;
+        else parents[parentA] = parentB;
     }
     
-    copy.forEach((path) => {
-        const [a, b, cost] = path;
-        
-        if(findParents(a) !== findParents(b)) {
-            answer += cost; // 비용 순으로 오름차순 정렬했기 때문에 최소 비용으로 더해짐
-            unionParents(a, b);
-        }
+    costs = costs.sort((a, b) => {
+        return a[2] - b[2];
     })
+    
+    for(let cost of costs) {
+        const [a, b, w] = cost;
+        
+        if(findParent(a) !== findParent(b)) {
+            unionParent(a, b);
+            answer += w;
+        }
+    }
     
     return answer;
 }
