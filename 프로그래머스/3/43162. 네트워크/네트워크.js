@@ -1,16 +1,16 @@
 function solution(n, computers) {
-    const parents = new Array(computers.length);
+    const parents = new Array(n);
     
     for(let i = 0; i < n; i++) {
         parents[i] = i;
     }
     
-    const findParent = (x) => {
-        if(x === parents[x]) return x;
+    const findParent = (x) => {        
+        if(parents[x] === x) return x;
         return parents[x] = findParent(parents[x]);
     }
     
-    const unionParents = (a, b) => {
+    const unionParent = (a, b) => {
         const parentA = findParent(a);
         const parentB = findParent(b);
         
@@ -19,11 +19,10 @@ function solution(n, computers) {
     }
     
     for(let i = 0; i < n; i++) {
-        for(let j = 0; j < n; j++) {
+        for(let j = 0; j < n; j++) { 
             if(i === j) continue;
-            
-            if(computers[i][j] === 1 && findParent(i) !== findParent(j)) {
-                unionParents(i, j);
+            if(computers[i][j] === 1) {
+                unionParent(i, j);
             }
         }
     }
@@ -31,6 +30,6 @@ function solution(n, computers) {
     for(let i = 0; i < n; i++) {
         parents[i] = findParent(i);
     }
-        
+    
     return new Set(parents).size;
 }
