@@ -14,13 +14,11 @@ function solution(diffs, times, limit) {
             const timeCur = times[i];
             const diff = diffs[i];
             
-            if(level >= diff) {
-                requiredTime += timeCur;
-                timePrev = timeCur;
-                continue;
+            if(level < diff) {
+                requiredTime += (timePrev + timeCur) * (diff - level);
             }
 
-            requiredTime += (timePrev + timeCur) * (diff - level) + timeCur;
+            requiredTime += timeCur;
             timePrev = timeCur;
         }
         
