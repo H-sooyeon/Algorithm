@@ -19,7 +19,7 @@ const dp = Array.from({ length: m }, () => new Array(n).fill(-1));
 dp[0][0] = 1;
 
 const dfs = (y, x) => {
-  if (dp[y][x] > -1) return dp[y][x];
+  if (dp[y][x] !== -1) return dp[y][x];
 
   dp[y][x] = 0;
 
@@ -30,8 +30,7 @@ const dfs = (y, x) => {
     if (ny >= m || ny < 0 || nx >= n || nx < 0) continue;
     if (list[ny][nx] <= list[y][x]) continue;
 
-    const value = dfs(ny, nx);
-    dp[y][x] += value;
+    dp[y][x] += dfs(ny, nx);
   }
   return dp[y][x];
 };
