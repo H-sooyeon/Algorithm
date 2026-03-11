@@ -32,7 +32,9 @@ const unionParent = (a, b) => {
 
 const edges = [];
 for (let i = 0; i < n; i++) {
-  for (let j = i + 1; j < n; j++) {
+  for (let j = 0; j < n; j++) {
+    if (i === j) continue;
+
     const dist = Math.sqrt(Math.pow(stars[i][0] - stars[j][0], 2) + Math.pow(stars[i][1] - stars[j][1], 2));
     edges.push([i, j, dist]);
   }
