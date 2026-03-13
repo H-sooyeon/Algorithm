@@ -6,29 +6,15 @@ function solution(m, n, puddles) {
         dp[y-1][x-1] = -1;
     }
     
-    let rowFlag = false;
-    for(let i = 0; i < m; i++) {
-        if(rowFlag) dp[0][i] = -1;
-        
-        if(dp[0][i] !== -1) dp[0][i] = 1;
-        else rowFlag = true
-    }
+    dp[0][0] = 1;
     
-    let colFlag = false;
     for(let i = 0; i < n; i++) {
-        if(colFlag) dp[i][0] = -1;
-        
-        if(dp[i][0] !== -1) dp[i][0] = 1;
-        else colFlag = true;
-    }
-    
-    for(let i = 1; i < n; i++) {
-        for(let j = 1; j < m; j++) {
-            if(dp[i][j] === -1) continue;
+        for(let j = 0; j < m; j++) {
+            if(dp[i][j] === -1 || (i === 0 && j === 0)) continue;
             
             let value = 0;
-            if(dp[i-1][j] !== -1) value += dp[i-1][j];
-            if(dp[i][j-1] !== -1) value += dp[i][j-1];
+            if(i-1 >= 0 && dp[i-1][j] !== -1) value += dp[i-1][j];
+            if(j-1 >= 0 && dp[i][j-1] !== -1) value += dp[i][j-1];
             
             dp[i][j] = value % 1000000007;
         }
