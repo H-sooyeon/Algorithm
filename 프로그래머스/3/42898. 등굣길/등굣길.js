@@ -1,45 +1,38 @@
 function solution(m, n, puddles) {
-    const INF = 987654321;
-    const MOD = 1000000007;
-    let dp = Array.from({length: n}, () => Array(m));
+    const dp = Array.from({length: n}, () => new Array(m).fill(0));
     
-    for(let i = 0; i < n; i++) {
-        for(let j = 0; j < m; j++) {
-            dp[i][j] = [0, INF];
-        }
+    for(let puddle of puddles) {
+        const [x, y] = puddle;
+        dp[y-1][x-1] = -1;
     }
     
-    const dy = [0, 1];
-    const dx = [1, 0];
+    let rowFlag = false;
+    for(let i = 0; i < m; i++) {
+        if(rowFlag) dp[0][i] = -1;
+        
+        if(dp[0][i] !== -1) dp[0][i] = 1;
+        else rowFlag = true
+    }
     
-    dp[0][0] = [0, 0];
-    
-    puddles.forEach(([x, y]) => {
-        dp[y - 1][x - 1] = -1;
-    })
-    
+    let colFlag = false;
     for(let i = 0; i < n; i++) {
-        for(let j = 0; j < m; j++) {
+        if(colFlag) dp[i][0] = -1;
+        
+        if(dp[i][0] !== -1) dp[i][0] = 1;
+        else colFlag = true;
+    }
+    
+    for(let i = 1; i < n; i++) {
+        for(let j = 1; j < m; j++) {
             if(dp[i][j] === -1) continue;
-            for(let k = 0; k < 2; k++) {
-                let ny = i + dy[k];
-                let nx = j + dx[k];
-                                
-                if(ny >= n || nx >= m) continue;
-                if(dp[ny][nx] === -1) continue;
-                
-                if(dp[ny][nx][1] > dp[i][j][1] + 1) {
-                    dp[ny][nx][1] = dp[i][j][1] + 1;
-                    dp[ny][nx][0] = (dp[i][j][0] ? dp[i][j][0] : 1) % MOD;
-                }
-                else if(dp[ny][nx][1] === dp[i][j][1] + 1) {
-                    dp[ny][nx][0] = (dp[ny][nx][0] + dp[i][j][0]) % MOD;
-                }
-            }
+            
+            let value = 0;
+            if(dp[i-1][j] !== -1) value += dp[i-1][j];
+            if(dp[i][j-1] !== -1) value += dp[i][j-1];
+            
+            dp[i][j] = value % 1000000007;
         }
     }
-    
-    // console.log(dp);
-    
-    return dp[n-1][m-1][0] % MOD;
+        
+    return dp[n-1][m-1];
 }
