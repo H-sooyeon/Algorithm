@@ -1,16 +1,26 @@
 function solution(order) {
     let answer = 0;
-    let stack = [];
+    const stack = [];
     
-    for(let i = 1; i <= order.length; i++) {
-        stack.push(i);
+    let target = 0;
+    let item = 1;
+    while(target < order.length) {
+        stack.push(item);
         
-        let length = stack.length;
-        while(length && stack[length - 1] === order[answer]) {
-            stack.pop();
-            answer++;
-            length = stack.length;
+        while(stack.length) {
+            const lastItem = stack.pop();
+            if(lastItem === order[target]) {
+                answer += 1;
+                target += 1;
+            }
+            else {
+                stack.push(lastItem);
+                break;
+            };
         }
+        
+        if(item < order.length) item += 1;
+        else break;
     }
     
     return answer;
