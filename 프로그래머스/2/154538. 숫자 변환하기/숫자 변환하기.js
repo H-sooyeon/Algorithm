@@ -1,52 +1,51 @@
-class Queue {
-    constructor() {
-        this.items = {};
-        this.head = 0;
-        this.tail = 0;
-    }
-    push(item) {
-        this.items[this.tail] = item;
-        this.tail += 1;
-    }
-    pop() {
-        const item = this.items[this.head];
-        delete this.items[this.head];
-        this.head += 1;
-        return item;
-    }
-    size() {
-        return this.tail - this.head;
-    }
-}
 
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
 function solution(x, y, n) {
-    let answer = -1;
-    const queue = new Queue();
-    const visited = new Array(1000001).fill(false);
-    
-    queue.push([0, x]);
-    
-    while(queue.size()) {
-        const [operCnt, value] = queue.pop();
-        
-        if(value === y) {
-            answer = operCnt;
-            break;
+    let count = 0
+    let test = [x]
+
+    if (x === y) return 0
+
+    while (true) {
+        count++
+
+        const set = new Set()
+        test.forEach(item => {
+            if (item + n <= y) set.add(item + n)
+            if (item * 2 <= y) set.add(item * 2)
+            if (item * 3 <= y) set.add(item * 3)
+        })
+
+        if (set.size === 0) return -1
+
+        if (set.has(y)) {
+            return count
         }
-        
-        if(value + n <= y && !visited[value + n]) {
-            queue.push([operCnt + 1, value + n]);
-            visited[value + n] = true;
-        }
-        if(value * 2 <= y && !visited[value * 2]) {
-            queue.push([operCnt + 1, value * 2]);
-            visited[value * 2] = true;
-        }
-        if(value * 3 <= y && !visited[value * 3]) {
-            queue.push([operCnt + 1, value * 3]);
-            visited[value * 3] = true;
-        } 
+
+        test = set
     }
-    
-    return answer;
 }
