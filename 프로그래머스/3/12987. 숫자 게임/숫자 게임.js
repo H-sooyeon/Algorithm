@@ -1,23 +1,21 @@
 function solution(A, B) {
     let answer = 0;
-    let indexA = 0;
-    let indexB = 0;
     
-    A.sort((a, b) => a - b);
-    B.sort((a, b) => a - b);
+    const sortedA = A.sort((a, b) => b - a);
+    const sortedB = B.sort((a, b) => b - a);
     
-    while(indexA < A.length && indexB < B.length) {
-        if(A[indexA] < B[indexB]) {
+    let left = 0;
+    let right = sortedB.length - 1;
+    let aIdx = 0;
+    while(left <= right) {
+        if(sortedA[aIdx] < sortedB[left]) {
             answer += 1;
-            indexA += 1;
-            indexB += 1;
-        }
-        else if(A[indexA] > B[indexB]) {
-            indexB += 1;
+            left += 1;
         }
         else {
-            indexB += 1;
+            right -= 1;
         }
+        aIdx += 1;
     }
     
     return answer;
