@@ -1,55 +1,54 @@
 function solution(m, n, board) {
     let answer = 0;
-    board = board.map((row) => Array.from(row));
+    const deleteBlocks = new Set();
+    board = board.map((row) => row.split(''));
         
+    // 2x2 삭제할 블록이 없을 때까지 반복
     while(true) {
-        let popList = [];
-        // 지울 블록 찾기
-        for(let i = 0; i < board.length - 1; i++) {
-            for(let j = 0; j < board[i].length - 1; j++) {
-                if(board[i][j] === 0) continue;
-                if(board[i][j] === board[i][j+1] &&
-                board[i][j] === board[i+1][j] &&
-                board[i][j] === board[i+1][j+1]) {
-                    popList.push([i, j]);
+        deleteBlocks.clear();
+        // 삭제 가능한 블록이 있는지 탐색
+        for(let row = 0; row < m - 1; row++) {
+            for(let col = 0; col < n - 1; col++) {
+                const char = board[row][col];
+                if (char === '.') continue;
+
+                // 2x2 체크: 현재 위치에서 오른쪽, 아래, 대각선 확인
+                if (board[row][col + 1] === char &&
+                    board[row + 1][col] === char &&
+                    board[row + 1][col + 1] === char) {
+                    
+                    deleteBlocks.add(`${row},${col}`);
+                    deleteBlocks.add(`${row},${col + 1}`);
+                    deleteBlocks.add(`${row + 1},${col}`);
+                    deleteBlocks.add(`${row + 1},${col + 1}`);
                 }
             }
         }
         
-        // 지울 블록이 없으면 break
-        if(popList.length === 0) break;
+        if(deleteBlocks.size === 0) break;
+        answer += deleteBlocks.size;
         
-        // 지우기
-        let set = new Set();
-        for(let [y, x] of popList) {
-            board[y][x] = 0;
-            board[y][x+1] = 0;
-            board[y+1][x] = 0;
-            board[y+1][x+1] = 0;
-            
-            // 지워야 하는 블록 set으로 중복 제거
-            set.add(JSON.stringify([y, x]));
-            set.add(JSON.stringify([y, x+1]));
-            set.add(JSON.stringify([y+1, x]));
-            set.add(JSON.stringify([y+1, x+1]));
+        // 블록 삭제
+        for(let block of deleteBlocks) {
+            const [y, x] = block.split(',').map(Number);
+            board[y][x] = '.';
         }
         
-        answer += set.size;
-        
         // 블록 내리기
-        for(let i = board.length-1; i >= 0; i--) {
-            for(let j = 0; j < board.length; j++) {
-                // 내려야 하는 경우가 아니면 continue
-                if(board[i][j] !== 0) continue;
-                
-                // 위에서 내릴 수 있는 블록이 있으면 가져오기
-                for(let k = i - 1; k >= 0; k--) {
-                    if(board[k][j] !== 0) {
-                        board[i][j] = board[k][j];
-                        board[k][j] = 0;
-                        break;
-                    }
+        for(let col = 0; col < n; col++) {
+            let stack = [];
+            for(let row = m - 1; row >= 0; row--) {
+                if(board[row][col] !== '.') {
+                    stack.push(board[row][col]);
+                    board[row][col] = '.';
                 }
+            }
+            
+            // 아래에서부터 채워넣기
+            let currRow = m - 1;
+            while(stack.length) {
+                board[currRow][col] = stack.shift();
+                currRow--;
             }
         }
     }
