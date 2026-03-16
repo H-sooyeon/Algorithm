@@ -14,8 +14,6 @@ function solution(n, s) {
     for(let i = 0; i < remain; i++) {
         answer[i] += 1;
     }
-    
-    answer = answer.sort((a, b) => a - b);
-    
-    return answer;
+        
+    return answer.reverse();
 }
