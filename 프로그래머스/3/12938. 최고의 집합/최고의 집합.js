@@ -1,29 +1,21 @@
 function solution(n, s) {
+    if(n > s) return [-1];
+    
     let answer = [];
-    
-    if(s === 1) {
-        return [-1];
+
+    // 기본으로 나눠줄 수 있는 값 나누기
+    const base = Math.floor(s / n);
+    for(let i = 0; i < n; i++) {
+        answer.push(base);
     }
     
-    let cnt = n;
-    let num = s;
-    while(cnt > 0) {
-        let quotient = Math.floor(num / cnt);
-        let remain = num - quotient;
-                
-        if(quotient === 0) {
-            answer.push(remain);
-            break;
-        }
-        
-        answer.push(quotient);
-        if(remain === 0) break;
-        
-        num = remain;
-        cnt -= 1;
+    // 기본값을 제외한 나머지 값 나누기
+    const remain = s - (base * n);
+    for(let i = 0; i < remain; i++) {
+        answer[i] += 1;
     }
     
-    if(answer.length !== n) return [-1];
+    answer = answer.sort((a, b) => a - b);
     
     return answer;
 }
