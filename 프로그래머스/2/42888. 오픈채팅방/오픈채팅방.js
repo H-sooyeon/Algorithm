@@ -1,25 +1,27 @@
 function solution(record) {
     let answer = [];
-    let map = new Map();
+    const user = new Map();
     
-    record.forEach((v) => {
-        let arr = v.split(' ');
-        if(arr[0] === 'Enter' || arr[0] === 'Change') {
-            let [status, uid, name] = v.split(' ');
-            map.set(uid, name);
+    for(let line of record) {
+        const [command, userId, nickname] = line.split(' ');
+        
+        if(command === 'Enter' || command === 'Change') {
+            user.set(userId, nickname);
         }
-    })
+    }
     
-    record.forEach((v) => {
-        let arr = v.split(' ');
+   
+    for(let line of record) {
+        const [command, userId, nickname] = line.split(' ');
+        const userName = user.get(userId);
         
-        let lastName = map.get(arr[1]);
-        if(arr[0] === 'Enter') {
-            answer.push(`${lastName}님이 들어왔습니다.`);
-        } else if(arr[0] === 'Leave') {
-            answer.push(`${lastName}님이 나갔습니다.`)
+        if(command === 'Enter') {
+            answer.push(`${userName}님이 들어왔습니다.`);
         }
-    })
-        
+        else if(command === 'Leave') {
+            answer.push(`${userName}님이 나갔습니다.`);
+        }
+    }
+    
     return answer;
 }
