@@ -8,20 +8,9 @@ function solution(numbers) {
     // 소수인지 판단은 에라스토테레스의 체를 활용
     // 최대 길이 7이며 9까지의 숫자만으로 이루어져있으므로 
     // 10000000 까지의 값으로 미리 데이터를 넣어두고 사용
+    // -> 양이 너무 많으니, 순열로 알아낸 숫자만을 소수인지 판별
     
-    const MAX = 10000000;
-    const isPrime = new Array(MAX).fill(true);
     const visited = new Array(copyNumbers.length).fill(false);
-    isPrime[0] = false;
-    isPrime[1] = false;
-    
-    for(let i = 2; i <= Math.sqrt(MAX); i++) {
-        if(isPrime[i] === false) continue;
-        
-        for(let j = i; i * j <= MAX; j++) {
-            isPrime[i * j] = false;
-        }
-    }
     
     const permutation = (visited, list) => {
         if(list.length && !values.has(Number(list.join('')))) {
@@ -45,8 +34,17 @@ function solution(numbers) {
     
     permutation(visited, []);
     
+    const isPrime = (num) => {
+        if(num < 2) return false;
+        for(let i = 2; i <= Math.sqrt(num); i++) {
+            if(num % i === 0) return false;
+        }
+        return true;
+        
+    }
+    
     for(let value of values) {
-        if(isPrime[value]) answer += 1;
+        if(isPrime(value)) answer += 1;
     }
     
     return answer;
