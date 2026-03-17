@@ -1,51 +1,52 @@
 function solution(numbers) {
     let answer = 0;
-    let arr = numbers.split('');
+    const copyNumbers = numbers.split('');
+    const values = new Set();
     
-    let combi_arr = new Set();
-    let visited = new Array(arr.length).fill(false);
+    // 최대 7이므로 순열로 완전탐색을 진행
+    // 각 값을 숫자로 바꾼 뒤 해당 값이 소수인지 판단
+    // 소수인지 판단은 에라스토테레스의 체를 활용
+    // 최대 길이 7이며 9까지의 숫자만으로 이루어져있으므로 
+    // 10000000 까지의 값으로 미리 데이터를 넣어두고 사용
     
-    const combi = (v, k) => {
-        if(v.length === k) {
-            let str = '';
-            for(let i of v) str += arr[i];
-            let parseNum = parseInt(str);
-            if(parseNum === 1 || parseNum === 0) return;
-            combi_arr.add(parseNum);
+    const MAX = 10000000;
+    const isPrime = new Array(MAX).fill(true);
+    const visited = new Array(copyNumbers.length).fill(false);
+    isPrime[0] = false;
+    isPrime[1] = false;
+    
+    for(let i = 2; i <= Math.sqrt(MAX); i++) {
+        if(isPrime[i] === false) continue;
+        
+        for(let j = i; i * j <= MAX; j++) {
+            isPrime[i * j] = false;
+        }
+    }
+    
+    const permutation = (visited, list) => {
+        if(list.length && !values.has(Number(list.join('')))) {
+            values.add(Number(list.join('')));
+        }
+        
+        if(list.length === copyNumbers.length) {
             return;
         }
         
-        for(let i = 0; i < arr.length; i++) {
+        for(let i = 0; i < copyNumbers.length; i++) {
             if(visited[i]) continue;
             
-            v.push(i);
+            list.push(copyNumbers[i]);
             visited[i] = true;
-            combi(v, k);
-            v.pop();
+            permutation(visited, list);
             visited[i] = false;
+            list.pop();
         }
     }
     
-    for(let i = 1; i <= numbers.length; i++) {
-        combi([], i);
-        visited.fill(false);
-    }
+    permutation(visited, []);
     
-    // 소수인지 확인
-    const isDecimal = (num) => {
-        let flag = true;
-        for(let i = 2; i <= Math.sqrt(num); i++) {
-            if(num % i === 0) {
-                flag = false;
-                break;
-            }
-        }
-        return flag;
-    }
-    
-    // console.log(combi_arr);
-    for(let num of combi_arr) {
-        if(isDecimal(num)) answer++;
+    for(let value of values) {
+        if(isPrime[value]) answer += 1;
     }
     
     return answer;
