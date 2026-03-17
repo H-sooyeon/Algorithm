@@ -1,77 +1,33 @@
-class Queue {
-    constructor() {
-        this.items = {};
-        this.head = 0;
-        this.tail = 0;
-    }
-    push(item) {
-        this.items[this.tail] = item;
-        this.tail++;
-    }
-    pop() {
-        delete this.items[this.head];
-        this.head++;
-    }
-    front() {
-        return this.items[this.head];
-    }
-    size() {
-        return this.tail - this.head;
-    }
-}
-
 function solution(queue1, queue2) {
-    let answer = 0;
+    let queue1Sum = queue1.reduce((acc, cur) => acc + cur, 0);
+    let queue2Sum = queue2.reduce((acc, cur) => acc + cur, 0);
     
-    let q1 = new Queue();
-    let q2 = new Queue();
+    if(queue1Sum === queue2Sum) return 0;
+    const total = queue1Sum + queue2Sum;
     
-    let q1_sum = queue1.reduce((acc, cur) => {
-        q1.push(cur);
-        return cur + acc;
-    }, 0)
-    
-    let q2_sum = queue2.reduce((acc, cur) => {
-        q2.push(cur);
-        return cur + acc;
-    }, 0);
-    
-    let total = q1_sum + q2_sum;
-    
-    if(q1_sum === q2_sum) return 0;
+    // 홀수는 두 큐를 같게 만들 수 없음
     if(total % 2 === 1) return -1;
     
-    // queue1 * 3번 반복되면 다시 원점으로 돌아감
+    let target = total / 2;
+    const queue = [...queue1, ...queue2];
+    
+    let p1 = 0;
+    let p2 = queue1.length;
+    
     for(let i = 0; i < queue1.length * 3; i++) {
-        if(q1_sum < q2_sum) {
-            let v = q2.front();
-            q1.push(v);
-            
-            q1_sum += v;
-            q2_sum -= v;
-            
-            q2.pop();
-            
-            answer++
-        }
-        else if(q1_sum > q2_sum) {
-            let v = q1.front();
-            q2.push(v);
-            
-            q2_sum += v;
-            q1_sum -= v;
-            
-            q1.pop();
-            
-            answer++;
+        if(queue1Sum === target) {
+            return i;
         }
         
-        if(q1_sum === q2_sum) {
-            return answer;
+        if(queue1Sum > target) {
+            queue1Sum -= queue[p1];
+            p1 += 1;
+        }
+        else {
+            queue1Sum += queue[p2];
+            p2 += 1;
         }
     }
-    
-    
     
     return -1;
 }
