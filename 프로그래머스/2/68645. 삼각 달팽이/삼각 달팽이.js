@@ -8,19 +8,6 @@ function solution(n) {
         dp[i] = dp[i-1] + i;
     }
     
-    // n 4
-    // 1
-    // 2 9
-    // 3 10 8
-    // 4 5  6 7
-    
-    // n 5
-    // 1
-    // 2 12
-    // 3 13 11
-    // 4 14 15 10
-    // 5 6  7  8  9
-    
     let number = 1;
     let cnt = 0;
     while(number <= dp[n]) {
@@ -30,7 +17,7 @@ function solution(n) {
             number += 1;
         }
         
-        if(number === dp[n] + 1) break;
+        // if(number === dp[n] + 1) break;
                 
         // 오른쪽으로
         for(let j = cnt + 1; j < n - (cnt * 2); j++) {
@@ -38,7 +25,7 @@ function solution(n) {
             number += 1;
         }
                 
-        if(number === dp[n] + 1) break;
+        // if(number === dp[n] + 1) break;
                 
         // 위로 올라가기
         for(let i = n - cnt - 2; i > cnt * 2; i--) {
