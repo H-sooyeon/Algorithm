@@ -1,18 +1,27 @@
 function solution(number, k) {
-    let stack = [];
+    const stack = [];
+    let remainK = k;
     
-    stack.push(number[0]);
-    for(let i = 1; i < number.length; i++) {
-        while(stack[stack.length - 1] < number[i] && k > 0) {
-            if(stack.length) stack.pop();
-            k--;
+    for(let i = 0; i < number.length; i++) {
+        const current = Number(number[i]);
+        let prev = stack[stack.length - 1];
+        
+        // 현재 값보다 더 작은 값이 앞에 위치하면 삭제
+        while(current > prev && remainK > 0) {
+            stack.pop();
+                
+            prev = stack[stack.length - 1];
+            remainK -= 1;
         }
         
-        stack.push(number[i]);
+        stack.push(current);
     }
     
-    if(k > 0) {
-        stack = stack.slice(0, stack.length - k);
+    // 현재 값보다 더 작은 값이 앞에 없는 것이므로 마지막부터 pop하기
+    if(remainK > 0) {
+        for(let i = 0; i < remainK; i++) {
+            stack.pop();
+        }
     }
         
     return stack.join('');
