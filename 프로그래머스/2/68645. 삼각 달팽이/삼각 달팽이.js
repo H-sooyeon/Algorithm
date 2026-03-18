@@ -1,48 +1,57 @@
 function solution(n) {
     let answer = [];
-    let arr = Array.from({length: n}, (_, idx) => new Array(idx + 1).fill(0));
+    const triangle = Array.from({length: n}, () => new Array(n).fill(null));
+    const dp = new Array(n + 1);
+    dp[0] = 0;
     
-    let row_last = n;
-    let row_start = 0;
-    let col_last = n;
-    let col_start = 0;
-    
-    let num = 1;
-    while(true) {
-        // 아래로 내려가기
-        for(let i = row_start; i < row_last; i++) {
-            arr[i][col_start] = num++;
-        }
-        row_start++; // 1
-        col_start++; // 1
-        
-        // 오른쪽으로 이동하기
-        for(let i = col_start; i < col_last; i++) {
-            arr[row_last-1][i] = num++;
-        }
-        col_last--; // 4
-        row_last--; // n - 1 = 4
-        
-        // 위로 올라가기
-        // console.log('col_last: ', col_last - 1, ' row_last: ', row_last, ' row_start: ', row_start);
-        let tmp = col_last - 1;
-        for(let i = row_last-1; i >= row_start; i--) {
-            arr[i][tmp--] = num++;
-        }
-        // console.log('row_start', row_start, ' col_start', col_start, ' row_last', row_last, ' col_last', col_last);
-        // console.log(arr);
-
-        col_last--; // 3
-        row_start++;
-        
-        // console.log(col_start, col_last, row_start, row_last);
-        if(col_last <= col_start || row_last <= row_start) break;
+    for(let i = 1; i < n + 1; i++) {
+        dp[i] = dp[i-1] + i;
     }
     
-    // console.log(arr);
-    arr.forEach((v) => {
-        answer.push(...v);
-    })
+    // n 4
+    // 1
+    // 2 9
+    // 3 10 8
+    // 4 5  6 7
     
+    // n 5
+    // 1
+    // 2 12
+    // 3 13 11
+    // 4 14 15 10
+    // 5 6  7  8  9
+    
+    let number = 1;
+    let cnt = 0;
+    while(number <= dp[n]) {
+        // 아래로 내려가기
+        for(let i = cnt * 2; i < n - cnt; i++) {
+            triangle[i][cnt] = number;
+            number += 1;
+        }
+        
+        if(number === dp[n] + 1) break;
+                
+        // 오른쪽으로
+        for(let j = cnt + 1; j < n - (cnt * 2); j++) {
+            triangle[n - cnt - 1][j] = number;
+            number += 1;
+        }
+                
+        if(number === dp[n] + 1) break;
+                
+        // 위로 올라가기
+        for(let i = n - cnt - 2; i > cnt * 2; i--) {
+            triangle[i][i - cnt] = number;
+            number += 1;
+        }
+        cnt += 1;
+    }
+    
+    for(let i = 0; i < n; i++) {
+        for(let j = 0; j <= i; j++) {
+            answer.push(triangle[i][j]);
+        }
+    }
     return answer;
 }
