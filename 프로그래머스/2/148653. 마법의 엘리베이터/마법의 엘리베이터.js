@@ -1,42 +1,32 @@
 function solution(storey) {
     let answer = 0;
-    storey = storey.toString();
-    let arr = storey.split('').map(Number);
     
-    for(let i = arr.length - 1; i > 0; i--) {
-        // console.log(arr[i]);
-        if(arr[i] === 10) {
-            arr[i-1]++;
-            arr[i] = 0;
+    while(storey > 0) {
+        let current = storey % 10; // 일의 자리
+        let next = Math.floor(storey / 10) % 10; // 십의 자리
+        
+        // 현재 자리가 6 이상이라면 올림
+        if(current > 5) {
+            answer += 10 - current;
+            storey += 10;
         }
-        else if(arr[i] > 5) {
-            // 올라가기
-            arr[i-1]++;
-            answer += (10 - arr[i]);
-            arr[i] = 0;
-        }
-        else if(arr[i] === 5) {
-            if(arr[i-1] >= 5) {
-                // 올라가기
-                arr[i-1]++;
-                answer += 10 - arr[i];
-                arr[i] = 0;
-            }
-            else {
-                // 내려가기
-                answer += arr[i];
-                arr[i] = 0;
-            }
+        else if(current < 5) {
+            // 현재 자리가 4 이하라면 내림
+            answer += current;
         }
         else {
-            // 내려가기
-            answer += arr[i];
-            arr[i] = 0;
+            // 현재 자리가 5라면, 다음 자리 수를 보고 결정
+            // 다음 자리가 5 이상이라면 올리기
+            // 다음 자리가 4 이하라면 내리기
+            if(next >= 5) {
+                answer += 5;
+                storey += 10;
+            } else {
+                answer += 5;
+            }
         }
+        storey = Math.floor(storey / 10);
     }
-    
-    if(arr[0] > 5) answer += (10 - arr[0] + 1);
-    else answer += arr[0];
     
     return answer;
 }
