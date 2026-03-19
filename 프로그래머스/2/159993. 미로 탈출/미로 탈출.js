@@ -6,76 +6,75 @@ class Queue {
     }
     push(item) {
         this.items[this.tail] = item;
-        this.tail++;
+        this.tail += 1;
     }
     pop() {
+        const item = this.items[this.head];
         delete this.items[this.head];
-        this.head++;
+        this.head += 1;
+        return item;
     }
     size() {
         return this.tail - this.head;
     }
-    front() {
-        return this.items[this.head];
-    }
 }
-
+// 레버를 당겼는지 아직인지에 대한 상태값
+// X 벽으로는 지나갈 수 없음
+// 길은 여러 번 지날 수 있음
+// 레버를 당기지 않은 상태에서는 같은 길을 지나면 안됨
+// 레버를 당긴 상태에서만 같은 길을 지날 수 있음
 function solution(maps) {
-    let dist_lever = 0;
-    let answer = 0;
+    const copy = maps.map((row) => row.split(''));
+    const dy = [-1, 0, 1, 0];
+    const dx = [0, 1, 0, -1];
+    const [n, m] = [maps.length, maps[0].length];
+    const k = 2; // 상태 (0: 레버 미작동 방문, 1: 레버 작동 후 방문)
     let start = [];
-    let end = [];
-    let lever = [];
     
-    let n = maps.length;
-    let m = maps[0].length;
-    let visited = Array.from({length: n}, () => Array(m).fill(0));
+    const visited = Array.from({ length: n }, () => 
+        Array.from({ length: m }, () => Array(k).fill(false))
+    );
     
-    let dy = [-1, 0, 1, 0];
-    let dx = [0, 1, 0, -1];
-    
-    maps.forEach((row, i) => {
-        row.split('').forEach((v, idx) => {
-            if(v === 'S') start = [i, idx];
-            if(v === 'E') end = [i, idx];
-            if(v === 'L') lever = [i, idx];
-        })
-    })
-    
-    const bfs = (s_y, s_x, target) => {
-        visited.map((row) => row.fill(0));
-        let queue = new Queue();
-        queue.push([s_y, s_x]);
-        
-        while(queue.size()) {
-            let [y, x] = queue.front();
-            queue.pop();
-            
-            if(y === target[0] && x === target[1]) {
-                return visited[y][x];
-            }
-            
-            for(let i = 0; i < 4; i++) {
-                let ny = y + dy[i];
-                let nx = x + dx[i];
-                
-                if(ny >= n || ny < 0 || nx >= m || nx < 0) continue;
-                if(visited[ny][nx] || maps[ny][nx] === 'X') continue;
-                
-                queue.push([ny, nx]);
-                visited[ny][nx] = visited[y][x] + 1;
+    for(let i = 0; i < n; i++) {
+        for(let j = 0; j < m; j++) {
+            if(copy[i][j] === 'S') {
+                start = [i, j];
+                break;
             }
         }
-        
-        return 0;
+        if(start.length) break;
     }
     
-    // lever까지 이동
-    dist_lever += bfs(start[0], start[1], lever);
-    if(!dist_lever) return -1;
-    // 출구까지 이동
-    answer += bfs(lever[0], lever[1], end);
-    if(!answer) return -1;
+    const queue = new Queue();
+    queue.push([...start, 0, 0]);
+    visited[start[0]][start[1]][0] = true;
     
-    return answer + dist_lever;
+    while(queue.size()) {
+        let [y, x, dist, leverState] = queue.pop();
+        
+        if(copy[y][x] === 'E' && leverState) {
+            return dist;
+        }
+        
+        for(let i = 0; i < 4; i++) {
+            const ny = y + dy[i];
+            const nx = x + dx[i];
+            
+            if(ny >= n || ny < 0 || nx >= m || nx < 0) continue;
+            if(copy[ny][nx] === 'X') continue;
+            // 레버를 당긴 상태에서 중복된 곳을 가는게 아니면 continue
+            
+            let nextLeverState = leverState;
+            if(copy[ny][nx] === 'L') {
+                nextLeverState = 1;
+            }
+            
+            if(!visited[ny][nx][nextLeverState]) {
+                queue.push([ny, nx, dist + 1, nextLeverState]);
+                visited[ny][nx][nextLeverState] = true;
+            }
+        }
+    }
+    
+    return -1;
 }
