@@ -1,47 +1,111 @@
+class MinHeap {
+    constructor() {
+        this.heap = [];
+    }
+    push(item) {
+        this.heap.push(item);
+        this.bubbleUp();
+    }
+    pop() {
+        if(this.heap.length === 1) return this.heap.pop();
+        const item = this.heap[0];
+        this.heap[0] = this.heap.pop();
+        this.bubbleDown();
+        return item;
+    }
+    bubbleUp() {
+        let index = this.heap.length - 1;
+        while(index > 0) {
+            const parentIndex = Math.floor((index - 1) / 2);
+            if(this.heap[index] > this.heap[parentIndex]) break;
+            
+            [this.heap[index], this.heap[parentIndex]] = [this.heap[parentIndex], this.heap[index]];
+            index = parentIndex;
+        }
+    }
+    bubbleDown() {
+        let index = 0;
+        const len = this.heap.length;
+        
+        while(true) {
+            const left = index * 2 + 1;
+            const right = index * 2 + 2;
+            let smallest = index;
+            
+            if(left < len && this.heap[left] < this.heap[smallest]) {
+                smallest = left;
+            }
+            if(right < len && this.heap[right] < this.heap[smallest]) {
+                smallest = right;
+            }
+            if(smallest === index) break;
+            
+            [this.heap[index], this.heap[smallest]] = [this.heap[smallest], this.heap[index]];
+            index = smallest;
+        }
+    }
+    isEmpty() {
+        return this.heap.length === 0;
+    }
+    size() {
+        return this.heap.length;
+    }
+    peak() {
+        return this.heap[0];
+    }
+}
+
+// 한 번 사용한 객실은 퇴실 시간을 기준으로 10분간 청소
 function solution(book_time) {
     let answer = 0;
-    let time = [];
-    let room = [];
+    let times = [];
     
-    book_time.forEach(([start, end], idx) => {
-        let startTime = start.split(':').map(Number);
-        let endTime = end.split(':').map(Number);
-        endTime[1] += 10;
+    const convertTimeToMin = (time) => {
+        const [hh, mm] = time.split(':').map(Number);
+        return hh * 60 + mm;
+    }
+    
+    const waiting = [];
+    // 대기 중인(사용 중인) 방을 다음 방 확인 전까지 확인해서 
+    for(let book of book_time) {
+        const [start, end] = book;
         
-        let startMin = startTime[0] * 60 + startTime[1];
-        let endMin = endTime[0] * 60 + endTime[1];
+        const startTime = convertTimeToMin(start);
+        const endTime = convertTimeToMin(end) + 10;
         
-        time.push([startMin, endMin]);
-    })
+        times.push([startTime, endTime]);
+    }
     
-    time.sort((a, b) => a[0] - b[0]);
+    times = times.sort((a, b) => a[0] - b[0]);
+    const minHeap = new MinHeap();
     
-    // console.log(time);
-    
-    for(let i = 0; i < time.length; i++) {
-        let flag = true;
+    for(let time of times) {
+        const [start, end] = time;
         
-        for(let j = 0; j < room.length; j++) {
-            // 모든 room을 돌며 현재 time이 들어갈 수 있는 곳이 있는지 확인
-            // j번째 room의 끝나는 시간과 i번째 time의 끝나는 시간을 비교해서
-            // time이 더 크면 그때의 j번째 room에 할당
-            // 오름차순으로 정렬되어 있기 때문에 다음 time 때 시작 시간은 모든 room의 시작 시간보다 느림
-            if(room[j][1] <= time[i][0]) {
-                // console.log('방에 들어갈 수 있어요', room[j], time[i]);
-                room[j] = time[i];
-                flag = false;
-                break;
+        if(minHeap.isEmpty()) {
+            minHeap.push(end);
+            if(answer === 0) answer += 1; 
+        }
+        else {
+            // 현재 시간 기준 퇴실 가능한 방은 대기에서 제거
+            while(true) {
+                const waitting = minHeap.peak();
+                
+                // 퇴실 시간이 현재 방의 입실 시간보다 빠르다면 대기에서 제거
+                if(waitting <= start) {
+                    minHeap.pop();
+                } else break;
             }
+            
+            // 대기 중인 방이 현재 제공하는 방의 개수 이상일 때 방 추가
+            if(minHeap.size() >= answer) {
+                answer += 1;
+            }
+            
+            // 현재 방 대기열에 추가
+            minHeap.push(end);
         }
+    }
         
-        // 들어갈 수 있는 방을 찾지 못하면 room 추가
-        if(flag) {
-            room.push(time[i]);
-            // console.log('새로운 방으로!, room: ', room);
-            // console.log('새로운 방으로!, time: ', time[i]);
-            answer++;
-        }
-    }    
-    
     return answer;
 }
