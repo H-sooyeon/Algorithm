@@ -1,66 +1,47 @@
 function solution(arrayA, arrayB) {
-    let answer = 0;
-    let minA = 0;
-    let minB = 0;
+    const gcd = (a, b) => {
+        while(b !== 0) {
+            const r = a % b;
+            a = b;
+            b = r;
+        }
+        return a;
+    }
     
+    const getGcdForArray = (numbers) => {
+        if(numbers.length === 0) return 0;
+        
+        return numbers.reduce((acc, cur) => gcd(acc, cur), 0);
+    }
+    
+    const a = getGcdForArray(arrayA);
+    const b = getGcdForArray(arrayB);
+    
+    let flagA = true;
+    let flagB = true;
     for(let i = 0; i < arrayA.length; i++) {
-        minA = Math.max(arrayA[i], minA);
-        minB = Math.max(arrayB[i], minB);
-    }
-
-    
-    let measureA = [];
-    let measureB = [];
-    
-    const getMeasure = (num) => {
-        let result = [];
-        for(let i = 1; i <= Math.sqrt(num); i++) {
-            if(num % i === 0) {
-                if(i !== 1)
-                    result.push(i);
-                if(num / i !== i) {
-                    result.push(num / i);
-                }
-            }
+        if(arrayA[i] % b === 0) {
+            flagA = false;
+            break;
         }
-        return result;
     }
-    
-    measureA = getMeasure(minA);
-    measureB = getMeasure(minB);
-        
-    let filterA = measureA.filter((measure) => !measureB.includes(measure));
-    let filterB = measureB.filter((measure) => !measureA.includes(measure));
-        
-    for(let i = 0; i < filterA.length; i++) {
-        let flag = false;
-        for(let j = 0; j < arrayA.length; j++) {
-            if(arrayA[j] % filterA[i]) {
-                flag = true;
-            }
-            
-            if(arrayB[j] % filterA[i] === 0) {
-                flag = true
-            }
+    for(let i = 0; i < arrayB.length; i++) {
+        if(arrayB[i] % a === 0) {
+            flagB = false;
+            break;
         }
-        
-        if(!flag) answer = Math.max(filterA[i], answer);
     }
     
-        for(let i = 0; i < filterB.length; i++) {
-        let flag = false;
-        for(let j = 0; j < arrayB.length; j++) {
-            if(arrayB[j] % filterB[i]) {
-                flag = true;
-            }
-            
-            if(arrayA[j] % filterB[i] === 0) {
-                flag = true
-            }
-        }
-        
-        if(!flag) answer = Math.max(filterB[i], answer);
+    if(!flagA && !flagB) return 0;
+    if(flagA && flagB) {
+        return Math.max(a, b);
+    }
+    if(flagA) {
+        return b;
+    }
+    if(flagB) {
+        return a;
     }
     
-    return answer;
+    return 0;
 }
