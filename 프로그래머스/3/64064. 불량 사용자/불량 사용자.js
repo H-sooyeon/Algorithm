@@ -1,48 +1,58 @@
 function solution(user_id, banned_id) {
-    const bannedIdLen = banned_id.length;
-    const bannedUserById = Array.from({length: bannedIdLen}, () => Array());
+    const bannedUserMap = new Map();
+    const visited = new Map();
     
-    // banned_id에 맞는 유저 리스트 찾기
-    for(let i = 0; i < user_id.length; i++) {
-        for(let j = 0; j < bannedIdLen; j++) {
-            if(user_id[i].length !== banned_id[j].length) continue;
+    // 초기화: 모든 유저를 방문 안 함 상태로 설정
+    for(let user of user_id) {
+        visited.set(user, false);
+    }
+
+    // 1. 수정 포인트: banned_id의 '인덱스'를 키로 사용 (중복 패턴 대비)
+    for(let i = 0; i < banned_id.length; i++) {
+        const pattern = banned_id[i];
+        const matchedUsers = [];
+        
+        for(let user of user_id) {
+            if(user.length !== pattern.length) continue;
             
-            let isSame = true;
-            for(let k = 0; k < banned_id[j].length; k++) {
-                if(user_id[i][k] !== banned_id[j][k] && banned_id[j][k] !== '*') {
-                    isSame = false;
+            let flag = true;
+            for(let j = 0; j < user.length; j++) {
+                if(pattern[j] === '*') continue;
+                if(user[j] !== pattern[j]) {
+                    flag = false;
                     break;
                 }
             }
-            
-            if(isSame) {
-                bannedUserById[j].push(user_id[i]);
-            }
+            if(flag) matchedUsers.push(user);
         }
+        // 패턴 문자열 대신 인덱스 i를 키로 저장
+        bannedUserMap.set(i, matchedUsers);
     }
     
-    // bannedUserById 조합 찾기 (유니크)
-    const combinationArr = new Set();
-    const combination = (v, depth) => {
-        if(v.length === bannedIdLen) {
-            const set = new Set(v);
-            if(set.size === bannedIdLen) {
-                const copy = v.slice();
-                copy.sort((a, b) => a.localeCompare(b));
-                combinationArr.add(copy.join(' '));
-            }
-            
+    const set = new Set();
+    const combination = (bannedUserIdx) => {
+        if(bannedUserIdx === banned_id.length) {
+            // visited.values()는 삽입 순서를 보장하므로 중복 체크 가능
+            set.add([...visited.values()].join(','));
             return;
         }
         
-        for(let i = 0; i < bannedUserById[depth].length; i++) {
-            v.push(bannedUserById[depth][i]);
-            combination(v, depth + 1);
-            v.pop();
+        // 2. 수정 포인트: 인덱스로 매칭된 유저 리스트를 가져옴
+        const userList = bannedUserMap.get(bannedUserIdx);
+        
+        // 해당 패턴에 맞는 유저가 없을 경우 예외 처리
+        if (!userList) return; 
+
+        for(let i = 0; i < userList.length; i++) {
+            const targetUser = userList[i];
+            if(visited.get(targetUser)) continue;
+            
+            visited.set(targetUser, true);
+            combination(bannedUserIdx + 1);
+            visited.set(targetUser, false);
         }
     }
     
-    combination([], 0);
-        
-    return combinationArr.size;
+    combination(0);
+    return set.size;
 }
