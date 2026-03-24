@@ -6,97 +6,74 @@ class Queue {
     }
     push(item) {
         this.items[this.tail] = item;
-        this.tail++;
+        this.tail += 1;
     }
     pop() {
+        const item = this.items[this.head];
         delete this.items[this.head];
-        this.head++;
+        this.head += 1;
+        return item;
     }
     size() {
         return this.tail - this.head;
     }
-    front() {
-        return this.items[this.head];
-    }
 }
 
 function solution(board) {
-    let answer = 0;
-    let dy = [-1, 0, 1, 0];
-    let dx = [0, 1, 0, -1];
+    let answer = -1;
+    board = board.map((row) => row.split(''));
+    const n = board.length;
+    const m = board[0].length;
+    const visited = Array.from({length: n}, () => Array(m).fill(false));
     
-    let n = board.length;
-    let m = board[0].length;
-        
-    let cur = [0,0];
-    let flag = false;
-    board = board.map((v, idx) => {
-        let result = v.split('');
-        
-        for(let i = 0; i < result.length; i++) {
-            if(flag) break;
-            if(result[i] === 'R') {
-                cur = [idx, i];
-                flag = true;
+    const dy = [-1, 0, 1, 0];
+    const dx = [0, 1, 0, -1];
+    
+    let start = null;
+    for(let i = 0; i < n; i++) {
+        for(let j = 0; j < m; j++) {
+            if(board[i][j] === 'R') {
+                start = [i, j, 0];
                 break;
             }
         }
-        return result;
-    });
-    
-    let visited = Array.from(Array(n), () => Array(m).fill(false));
-    let visited_cnt = 0;
-    
-    const isValid = (ny, nx) => {
-        if(ny >= n || ny < 0 || nx >= m || nx < 0 || board[ny][nx] === 'D') return false;
-        return true;
+        if(start) break;
     }
-
-    const bfs = () => {
-        const queue = new Queue();
-        queue.push([cur[0], cur[1], 0]);
-        visited[cur[0]][cur[1]] = true;
+    
+    const queue = new Queue();
+    queue.push(start);
+    visited[start[0]][start[1]] = true;
+    
+    while(queue.size()) {
+        const [y, x, dist] = queue.pop();
         
-        // 시작 지점부터 시작
-        while(queue.size()) {
-            let size = queue.size();
+        if(board[y][x] === 'G') return dist;
+        
+        for(let i = 0; i < 4; i++) {
+            let ny = y;
+            let nx = x;
             
-            // 가던 길이 앞이 막혀있거나 D인 위치부터 시작
-            for(let t = 0; t < size; t++) {
-                let [y, x, cnt] = queue.front();
-                queue.pop();
-            
-                // 방향 탐색
-                for(let i = 0; i < 4; i++) {
-                    let ny = y + dy[i];
-                    let nx = x + dx[i];
+            // 장애물이나 벽을 만날 때까지 미끄러짐
+            while(true) {
+                let nextY = ny + dy[i];
+                let nextX = nx + dx[i];
                 
-                    // 미끄러지기
-                    while(isValid(ny, nx)) {
-                        ny += dy[i];
-                        nx += dx[i];
-                    }
-                
-                    // 현재 위치
-                    ny -= dy[i];
-                    nx -= dx[i];
-                
-                    if(board[ny][nx] === 'G') {
-                        answer = cnt + 1;
-                        return;
-                    }
-                
-                    if(!visited[ny][nx]) {
-                        visited[ny][nx] = true;
-                        queue.push([ny, nx, cnt + 1]);
-                    }
+                if(nextY >= 0 && nextY < n && nextX >= 0 && nextX < m && board[nextY][nextX] !== 'D') {
+                    ny = nextY;
+                    nx = nextX;
+                } else {
+                    // 더 못가면 그 자리에 멈춤
+                    break;
                 }
+            }
+            
+            if(!visited[ny][nx]) {
+                queue.push([ny, nx, dist + 1]);
+                visited[ny][nx] = true;
             }
         }
     }
     
-    bfs();
     
-    if(!answer) return -1;
     return answer;
 }
