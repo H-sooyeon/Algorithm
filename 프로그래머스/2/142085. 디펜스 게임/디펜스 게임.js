@@ -1,116 +1,74 @@
-function PriorityQueue(comparator) {
-  this._comparator = comparator || PriorityQueue.DEFAULT_COMPARATOR;
-  this._elements = [];
+class MaxHeap {
+    constructor() {
+        this.heap = [];
+    }
+    push(item) {
+        this.heap.push(item);
+        this.bubbleUp();
+    }
+    pop() {
+        if(this.heap.length === 1) return this.heap.pop();
+        const top = this.heap[0];
+        this.heap[0] = this.heap.pop();
+        this.bubbleDown();
+        return top;
+    }
+    bubbleUp() {
+        let index = this.heap.length - 1;
+        while(index > 0) {
+            const parentIdx = Math.floor((index - 1) / 2);
+            if(this.heap[index] <= this.heap[parentIdx]) break;
+            
+            [this.heap[index], this.heap[parentIdx]] = [this.heap[parentIdx], this.heap[index]];
+            index = parentIdx;
+        }
+    }
+    bubbleDown() {
+        let index = 0;
+        const len = this.heap.length;
+        
+        while(true) {
+            const left = index * 2 + 1;
+            const right = index * 2 + 2;
+            let largest = index;
+            
+            if(left < len && this.heap[left] > this.heap[largest]) {
+                largest = left;
+            }
+            if(right < len && this.heap[right] > this.heap[largest]) {
+                largest = right;
+            }
+            if(largest === index) break;
+            [this.heap[largest], this.heap[index]] = [this.heap[index], this.heap[largest]];
+            index = largest;
+        }
+    }
+    isEmpty() {
+        return this.heap.length === 0;
+    }
+    
 }
 
-PriorityQueue.DEFAULT_COMPARATOR = function(a, b) {
-  if (typeof a === 'number' && typeof b === 'number') {
-    return a - b;
-  } else {
-    a = a.toString();
-    b = b.toString();
-
-    if (a == b) return 0;
-
-    return (a > b) ? 1 : -1;
-  }
-};
-
-PriorityQueue.prototype.isEmpty = function() {
-  return this.size() === 0;
-};
-
-PriorityQueue.prototype.peek = function() {
-  if (this.isEmpty()) throw new Error('PriorityQueue is empty');
-
-  return this._elements[0];
-};
-
-PriorityQueue.prototype.deq = function() {
-  var first = this.peek();
-  var last = this._elements.pop();
-  var size = this.size();
-
-  if (size === 0) return first;
-
-  this._elements[0] = last;
-  var current = 0;
-
-  while (current < size) {
-    var largest = current;
-    var left = (2 * current) + 1;
-    var right = (2 * current) + 2;
-
-    if (left < size && this._compare(left, largest) >= 0) {
-      largest = left;
-    }
-
-    if (right < size && this._compare(right, largest) >= 0) {
-      largest = right;
-    }
-
-    if (largest === current) break;
-
-    this._swap(largest, current);
-    current = largest;
-  }
-
-  return first;
-};
-
-PriorityQueue.prototype.enq = function(element) {
-  var size = this._elements.push(element);
-  var current = size - 1;
-
-  while (current > 0) {
-    var parent = Math.floor((current - 1) / 2);
-
-    if (this._compare(current, parent) <= 0) break;
-
-    this._swap(parent, current);
-    current = parent;
-  }
-
-  return size;
-};
-
-PriorityQueue.prototype.size = function() {
-  return this._elements.length;
-};
-
-PriorityQueue.prototype.forEach = function(fn) {
-  return this._elements.forEach(fn);
-};
-
-PriorityQueue.prototype._compare = function(a, b) {
-  return this._comparator(this._elements[a], this._elements[b]);
-};
-
-PriorityQueue.prototype._swap = function(a, b) {
-  var aux = this._elements[a];
-  this._elements[a] = this._elements[b];
-  this._elements[b] = aux;
-};
-
-function solution(n, k, enemy) {
-    let answer = 0;
-    let pq = new PriorityQueue((a, b) => a - b);
-        
+function solution(n, k, enemy) {    
+    if(k >= enemy.length) return enemy.length;
+    
+    let handleEnemy = 0;
+    const maxHeap = new MaxHeap();
     for(let i = 0; i < enemy.length; i++) {
-        // 병사, k도 부족할 경우 break;
-        if(n < enemy[i] && k === 0) break;
-        pq.enq(enemy[i]);
+        maxHeap.push(enemy[i]);
+        handleEnemy += enemy[i];
         
-        // 병사가 부족할 경우
-        if(n < enemy[i]) {
-            n += pq.deq();
-            k--;
+        while(handleEnemy > n && k > 0) {
+            handleEnemy -= maxHeap.pop();
+            k -= 1;
         }
         
-        n -= enemy[i];
-        answer++;
+        if(handleEnemy > n && k === 0) {
+            return i;
+        }
     }
     
+    if(handleEnemy <= n) return enemy.length;
     
-    return answer;
+    return 0;
 }
