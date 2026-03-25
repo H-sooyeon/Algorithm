@@ -1,62 +1,53 @@
 function solution(m, musicinfos) {
     let answer = [];
-    let arr = Array.from({length: musicinfos.length}, () => []);
-    let time = new Array(musicinfos.length).fill(0);
-    let title = new Array(musicinfos.length).fill('');
-    let sheetArr = new Array(musicinfos.length).fill('');
+    const replaceSharp = (str) => {
+        return str.replace(/C#/g, 'c')
+                  .replace(/D#/g, 'd')
+                  .replace(/F#/g, 'f')
+                  .replace(/G#/g, 'g')
+                  .replace(/A#/g, 'a')
+                  .replace(/B#/g, 'b')
+    };
     
-    for(let i = 0; i < musicinfos.length; i++) {
-        let tmp = musicinfos[i].split(',');
-        let [startHour, startMin] = tmp[0].split(':').map(Number);
-        let [endHour, endMin] = tmp[1].split(':').map(Number);
-        
-        time[i] = (endHour * 60 + endMin) - (startHour * 60 + startMin);
-        title[i] = tmp[2]; // 곡 제목
-        let sheet = tmp[3]; // 악보 정보
-        
-        for(let j = 0; j < sheet.length; j++) {
-            if(sheet[j] === '#') continue;
-            
-            if((j !== sheet.length - 1) && sheet[j+1] === '#') {
-                let value = sheet[j] + sheet[j+1];
-                arr[i].push(value);
-            }
-            else {
-                arr[i].push(sheet[j]);
-            }
-        }
-        
-        // 재생 시간만큼 이어 붙이기
-        let idx = 0;
-        while(time[i] - arr[i].length > 0) {
-            arr[i].push(arr[i][idx % arr[i].length]);
-            idx++;
-        }
-        // 악보 길이보다 재생 시간이 짧을 때
-        arr[i] = arr[i].slice(0, time[i]);
-
-        sheetArr[i] = arr[i].join('');
+    const mSheet = replaceSharp(m);
+    
+    const convertTimeToMin = (time) => {
+        const [hh, mm] = time.split(':').map(Number);
+        return hh * 60 + mm;
     }
+    
+    const musicInfoFormat = (musicInfo) => {
+        let [start, end, title, sheet] = musicInfo.split(',');
+        let playSheet = '';
+        [start, end] = [convertTimeToMin(start), convertTimeToMin(end)]
         
-    for(let i = 0; i < sheetArr.length; i++) {
-        let str = sheetArr[i];
+        const diff = end - start;
+        sheet = replaceSharp(sheet);
         
-        if(str.includes(m)) {
-            let sheetIdx = str.indexOf(m);
-            
-            while(sheetIdx !== -1) {
-                if(str[sheetIdx + m.length] !== '#') {
-                    answer.push([title[i], time[i]]);
-                    break;
-                }
-                sheetIdx = str.indexOf(m, sheetIdx + 1);
-            }
+        for(let i = 0; i < diff; i++) {
+            const sheetIdx = i % sheet.length;
+            playSheet += sheet[sheetIdx];
+        }
+        
+        return [start, end, title, playSheet];
+    }
+    
+    for(let musicInfo of musicinfos) {
+        const [start, end, title, playSheet] = musicInfoFormat(musicInfo)
+        
+        if(playSheet.includes(mSheet)) {
+            answer.push([end - start, start, end, title]);
         }
     }
     
     if(answer.length === 0) return '(None)';
     
-    answer = answer.sort((a, b) => b[1] - a[1]);
+    answer = answer.sort((a, b) => {
+        if(a[0] === b[0]) {
+            return a[1] - b[1];
+        }
+        return b[0] - a[0];
+    })
     
-    return answer[0][0];
+    return answer[0][3];
 }
