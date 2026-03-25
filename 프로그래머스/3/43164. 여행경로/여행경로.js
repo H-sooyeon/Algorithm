@@ -1,56 +1,50 @@
+// 항상 ICN 공항에서 출발
 function solution(tickets) {
     let answer = [];
-    const requireVisitedCityCnt = tickets.length;
-    const city = new Map();
+    const unique = new Set();
+    const map = new Map();
+    const visited = new Map();
     
-    tickets.forEach((ticket, idx) => {
-        const [start, arrive] = ticket;
+    for(let ticket of tickets) {
+        const [start, end] = ticket;
+        unique.add(start);
+        unique.add(end);
         
-        const list = city.get(start);
-        if(list) {
-            list.push([arrive, idx]);
-            city.set(start, list);
+        if(!map.has(start)) {
+            map.set(start, []);
+            visited.set(start, []);
         }
-        else {
-            city.set(start, [[arrive, idx]]);
-        }
-    })
-        
-    const dfs = (current, depth, list, visited) => {
-        if(depth === requireVisitedCityCnt) {
-            if(answer.length === 0) {
-                answer = [...list];
-            }
-            else {
-                for(let i = 0; i < list.length; i++) {
-                    if(answer[i] === list[i]) continue;
-                    let tmp = [answer[i], list[i]];
-                    
-                    tmp.sort((a, b) => a.localeCompare(b));
-                    if(tmp[0] === list[i]) {
-                        answer = [...list];
-                        break;
-                    }
-                    else break;
-                }
+        map.get(start).push(end);
+        visited.get(start).push(false);
+    }
+    
+    const dfs = (cur, visited, list) => {
+        if(list.length - 1 === tickets.length) {
+            const tmp = new Set(list);
+            if(tmp.size === unique.size) {
+                // 모든 도시를 방문했음
+                answer.push(list.join(','));
             }
             return;
         }
         
-        if(!city.get(current)) return;
+        const nextList = map.get(cur);
+        const nextVisited = visited.get(cur);
         
-        for(let [next, idx] of city.get(current)) {
-            if(visited[idx]) continue;
+        if(!nextList) return;
+        
+        for(let i = 0; i < nextList.length; i++) {
+            if(nextVisited[i]) continue;
             
-            list.push(next);
-            visited[idx] = true;
-            dfs(next, depth + 1, list, visited);
+            nextVisited[i] = true;
+            list.push(nextList[i]);
+            dfs(nextList[i], visited, list);
             list.pop();
-            visited[idx] = false;
+            nextVisited[i] = false;
         }
     }
     
-    dfs('ICN', 0, ['ICN'], new Array(tickets.length).fill(false));
+    dfs('ICN', visited, ['ICN']);
     
-    return answer;
+    return answer.sort()[0].split(',');
 }
