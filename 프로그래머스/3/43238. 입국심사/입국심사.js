@@ -1,23 +1,24 @@
+// 시간
 function solution(n, times) {
     let answer = 0;
     
-    let low = 1;
-    let high = Math.max(...times) * n;
+    let left = 1;
+    let right = Number.MAX_SAFE_INTEGER;
     
-    while(low <= high) {
-        const mid = Math.floor((low + high) / 2);
+    while(left < right) {
+        const mid = Math.floor((left + right) / 2);
         
-        let cnt = 0;
-        times.forEach((time) => {
-            cnt += Math.floor(mid / time);
-        })
+        let passedPerson = 0;
+        for(let time of times) {
+            passedPerson += Math.floor(mid / time);
+        }
         
-        if(cnt >= n) {
-            high = mid - 1;
-            answer = mid;
+        if(passedPerson < n) {
+            left = mid + 1;
         }
         else {
-            low = mid + 1;
+            answer = mid;
+            right = mid;
         }
     }
     
