@@ -1,45 +1,42 @@
 function solution(maps) {
     let answer = [];
-    let n = maps.length;
-    let m = maps[0].length;
+    const n = maps.length;
+    const m = maps[0].length;
     
-    maps = maps.map((v, idx) => [...v]);
+    const dy = [-1, 0, 1, 0];
+    const dx = [0, 1, 0, -1];
     
-    let dy = [-1, 0, 1, 0];
-    let dx = [0, 1, 0, -1];
+    const map = maps.map((row) => row.split('').map((value) => {
+        if(Number(value)) return Number(value);
+        return value;
+    }));
+    const visited = Array.from({length: n}, () => new Array(m).fill(false));
     
-    let visited = Array.from({length: maps.length}, (_, idx) => Array(maps[0].length).fill(false));
-    let value = 0;
-    
-    const dfs = (y, x, cnt) => {
+    const dfs = (y, x) => {
         visited[y][x] = true;
-        value += Number(maps[y][x]);
         
+        let value = 0;
         for(let i = 0; i < 4; i++) {
-            let ny = y + dy[i];
-            let nx = x + dx[i];
+            const ny = y + dy[i];
+            const nx = x + dx[i];
             
             if(ny >= n || ny < 0 || nx >= m || nx < 0) continue;
-            if(visited[ny][nx] || maps[ny][nx] === 'X') continue;
+            if(visited[ny][nx] || map[ny][nx] === 'X') continue;
             
-            dfs(ny, nx);
+            value += dfs(ny, nx);
         }
-        return;
+        
+        return map[y][x] + value;
     }
     
     for(let i = 0; i < n; i++) {
         for(let j = 0; j < m; j++) {
-            if(maps[i][j] !== 'X' && !visited[i][j]) {
-                value = 0;
-                dfs(i, j);
-                
-                answer.push(value);
-            }
+            if(visited[i][j] || map[i][j] === 'X') continue;
+            
+            answer.push(dfs(i, j));
         }
     }
     
-    answer.sort((a, b) => a - b);
-    if(!answer.length) return [-1];
-    
-    return answer;
+    if(answer.length === 0) return [-1];
+    return answer.sort((a, b) => a - b);
 }
