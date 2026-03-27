@@ -1,85 +1,63 @@
 class Queue {
     constructor() {
         this.items = {};
-        this.head = 0;
         this.tail = 0;
+        this.head = 0;
     }
     push(item) {
         this.items[this.tail] = item;
         this.tail += 1;
     }
     pop() {
+        const item = this.items[this.head];
         delete this.items[this.head];
         this.head += 1;
-    }
-    front() {
-        return this.items[this.head];
+        return item;
     }
     size() {
         return this.tail - this.head;
     }
 }
 
-// 직선 도로를 만들 때는 100원 소요
-// 코너 만들 때는 500원 소요
 function solution(board) {
-    const INF = Number.MAX_SAFE_INTEGER
+    const INF = Number.MAX_SAFE_INTEGER;
     let answer = INF;
-    const dy = [-1, 1, 0, 0];
-    const dx = [0, 0, -1, 1]; // 상 하 좌 우
     const n = board.length;
-    const visited = Array.from({length: n}, () => Array.from({length: n}, () => Array(4).fill(INF)));
     
-    const isPossible = (y, x) => {
-        if(y >= n || x >= n || y < 0 || x < 0) return false;
-        if(board[y][x] === 1) return false;
-        
-        return true;
-    }
+    // 우 하 좌 상
+    const dy = [0, 1, 0, -1];
+    const dx = [1, 0, -1, 0];
+    const visited = Array.from({length: n}, () => Array.from({length: n}, () => new Array(4).fill(INF)));
     
     const queue = new Queue();
-    queue.push([0, 0, 3, 0]); // y, x, dir, cost
+    queue.push([0, 0, 0, 0]);
     queue.push([0, 0, 1, 0]);
-    
-    visited[0][0][3] = true;
-    visited[0][0][1] = true;
-    
-    while(queue.size() > 0) {
-        const [y, x, dir, cost] = queue.front();
-        queue.pop();
+    while(queue.size()) {
+        const [y, x, dir, cost] = queue.pop();
         
-        // visited[y][x][dir] = true;
-        if(y === n - 1 && x === n - 1) {
+        if(y === n-1 && x === n-1) {
             answer = Math.min(cost, answer);
+            continue;
         }
         
         for(let i = 0; i < 4; i++) {
             const ny = y + dy[i];
             const nx = x + dx[i];
             
-            // if(y === 4 && x === 4 && ny === 5 && nx === 4) {
-            //     console.log(isPossible(ny, nx));
-            //     if(isPossible(ny, nx)) {
-            //         console.log(visited[ny][nx][i]);
-            //     }
-            // }
+            if(ny >= n || ny < 0 || nx >= n || nx < 0) continue;
+            if(board[ny][nx] === 1) continue;
+            // 반대방향은 못가게
+            if((dir === 0 && i === 2) ||(dir === 1 && i === 3) || (dir === 2 && i === 0) || (dir === 3 && i === 1)) continue
             
-            if(!isPossible(ny, nx)) continue;
-            if((dir === 0 && i === 1) || (dir === 2 && i === 3) || (dir === 1 && i === 0) || (dir === 3 && i === 2)) continue;
-            
-            
-            let coin = 100;
-            // 0상 1하 2좌 3우
-            if(dir !== i) {
-                coin += 500;
+            let newCost = cost;
+            // 코너
+            if(dir !== i) newCost += 500;
+
+            newCost += 100;
+            if(visited[ny][nx][i] > newCost) {
+                queue.push([ny, nx, i, newCost]);
+                visited[ny][nx][i] = newCost;
             }
-            
-            if(visited[ny][nx][i] <= coin + cost) continue;
-            
-            // console.log('y', y, 'x', x, 'dir', dir, 'ny', ny, 'nx', nx, 'i', i, 'coin', coin, 'cost', cost);
-            queue.push([ny, nx, i, cost + coin]);
-            visited[ny][nx][i] = cost + coin;
-            
         }
     }
     
