@@ -1,88 +1,58 @@
+// 셔틀 운행 횟수 n
+// 셔틀 운행 간격 t
+// 한 셔틀에 탈 수 있는 최대 크루 수 m
+// 크루가 대기열에 도착하는 시각 timetable
 function solution(n, t, m, timetable) {
     let answer = '';
-    const busArriveTime = [];
-    const crewArriveTimeTable = [];
-    // 마지막으로 오는 버스의 시간을 계산해서, 그 후로 오는 크루들은 crewArriveTimeTable에 넣지 않는다.
-    let lastBusArriveTime = 60 * 9 + ((n - 1) * t);
-        
+    const busTime = [];
+    
     const convertTimeToMin = (time) => {
         const [hh, mm] = time.split(':').map(Number);
-        const res = hh * 60 + mm;
-        
-        return res;
+        return hh * 60 + mm;
     }
     
-    const convertMinToTime = (min) => {
-        let hh = Math.floor(min / 60);
-        let mm = min % 60;
+    const convertTimeToStr = (time) => {
+        let hh = Math.floor(time / 60);
+        let mm = time % 60;
         
-        if(hh < 10) {
-            hh = `0${hh}`;
-        }
-        if(mm < 10) {
-            mm = `0${mm}`;
-        }
-        
-        return `${hh}:${mm}`;
+        if(hh < 10) hh = '0' + hh;
+        if(mm < 10) mm = '0' + mm;
+        return hh + ':' + mm;
     }
     
-    timetable.forEach((time) => {
-        const crewTime = convertTimeToMin(time);
-        if(lastBusArriveTime >= crewTime) {
-            crewArriveTimeTable.push(crewTime);
-        }
-    })
-    
-    crewArriveTimeTable.sort((a, b) => a - b);
-    
-    let lastBusStop = 60 * 9;
     for(let i = 0; i < n; i++) {
-        busArriveTime.push(lastBusStop);
-        lastBusStop += t;
+        busTime.push(540 + i * t);
     }
-        
-    let cornArriveTime = -1;
+    
+    for(let i = 0; i < timetable.length; i++) {
+        timetable[i] = convertTimeToMin(timetable[i]);
+    }
+    
+    timetable = timetable.sort((a, b) => a - b);
+    
+    // console.log(timetable);
     let crewIdx = 0;
-    busArriveTime.forEach((arriveTime, busIdx) => {
-        let numberOfPassengers = 0;
-        for(let i = crewIdx; i < crewArriveTimeTable.length; i++) {
-            const crewArriveTime = crewArriveTimeTable[i];
-            // console.log('crewArriveTime', crewArriveTime, 'crewIdx', crewIdx);
-            
-            if(busIdx === busArriveTime.length - 1) { // 마지막 버스일 때
-                // console.log('마지막 버스!', numberOfPassengers);
-                if(numberOfPassengers + 1 === m) { // 더 탈 수 있는 인원이 없다면
-                    // console.log('콘이 타아야해!!');
-                    // 현재 크루의 도착 시간이 셔틀에 탈 수 있는 시간이 아니라면 이전 크루보다 먼저 와야함
-                    if(crewArriveTime > arriveTime) {
-                        if(i > 0) { // 이전 크루가 있을 때
-                            cornArriveTime = crewArriveTimeTable[i-1] - 1;
-                        } else { // 이전 크루가 없을 때
-                            cornArriveTime = arriveTime;
-                        }
-                        
-                    }
-                    else {
-                        cornArriveTime = crewArriveTime - 1; // 1분 일찍 오면 됨
-                    }
-                    break;
-                }
-            }
-            
-            if(crewArriveTime > arriveTime || numberOfPassengers >= m) {
-                // console.log('해당 크루는 이 버스 못 타. 늦게 왔어.', crewArriveTime, arriveTime);
+    for(let i = 0; i < busTime.length; i++) {
+        let crewCnt = 0;
+        // console.log('i:', i, 'crewIdx:', crewIdx, 'bus:', busTime[i]);
+        for(let j = crewIdx; j < Math.min(crewIdx + m, timetable.length); j++) {
+            if(busTime[i] < timetable[j]) {
+                // console.log('버스 도착 시간보다 크루 도착 시간이 더 느려요');
                 break;
             }
             
-            crewIdx += 1;
-            numberOfPassengers += 1;
+            // console.log(j);
+            if(j === crewIdx + m - 1 && i === busTime.length - 1) {
+                // console.log('마지막은 콘이 타야해요!');
+                return convertTimeToStr(timetable[j] - 1);
+            }
+            
+            crewCnt += 1;
         }
-    })
-    
-    if(cornArriveTime === -1) {
-        return convertMinToTime(lastBusArriveTime);
-        
+        crewIdx += crewCnt;
     }
     
-    return convertMinToTime(cornArriveTime);
+    return convertTimeToStr(busTime[busTime.length-1]);
+    
+    return answer;
 }
