@@ -1,14 +1,17 @@
 function solution(n, money) {
-    const dp = new Array(n + 1).fill(0);
+    let answer = 0;
+    const dp = new Array(n+1).fill(0);
     
     dp[0] = 1;
-    for(let i = 0; i < money.length; i++) {
-        for(let j = 1; j <= n; j++) {
-            if(money[i] <= j) {
-                dp[j] += dp[j - money[i]];
-            }
+    
+    for(let m of money) {
+        for(let i = 1; i <= n; i++) {
+            if(i-m < 0) continue;
+            dp[i] = (dp[i] + dp[i-m]) % 1000000007;
         }
     }
+    
+    // console.log(dp);
         
     return dp[n];
 }
