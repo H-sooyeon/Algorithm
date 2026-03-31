@@ -1,54 +1,51 @@
-// 각 판매원의 이름을 담은 배열 enroll
-// 각 판매원을 다단계 조직에 참여시킨 다른 판매원의 이름을 담은 배열 referral
-// 판매량 집계 데이터의 판매원 이름을 나열한 배열 seller
-// 판매량 집계 데이터의 판매 수량을 나열한 배열 amount
+// 이익의 10%를 추천인에게 타고 가며 전달한다.
+// 금액은 원 단위에서 절사
+// 판매원의 이름을 담은 배열 enroll
+// 추천인 배열 referral
+// 판매량 집계 데이터 seller
+// 판매 수량 amount
 function solution(enroll, referral, seller, amount) {
     let answer = [];
-    const nodes = {};
+    const employee = {};
     
-    function Node(name, referral, profit) {
+    function Node(name, referral) {
         this.name = name;
         this.referral = referral;
-        this.profit = profit;
+        this.amount = 0;
     }
     
-    for(let i = 0; i < enroll.length; i++) {
-        const recommender = referral[i];
+    const divideAmount = (total, node) => {
+        if(total <= 1) {
+            node.amount += total;
+            return;
+        }
+        
+        const percent10 = Math.floor(total * 0.1);
+        node.amount += (total - percent10);
+        
+        if(node.referral) {
+            divideAmount(percent10, employee[node.referral]);
+        }
+    }
+    
+    for(let i = 0; i < referral.length; i++) {
         const name = enroll[i];
+        const recommender = referral[i] === '-' ? null : referral[i];;
         
-        const node = new Node(name, recommender, 0);
-        nodes[name] = node;
+        employee[name] = new Node(name, recommender);
     }
     
-    const splitProceeds = (profit, node) => {
-        const sendProfit = Math.floor(profit * 0.1);
-        const myProfit = profit - sendProfit;
+    for(let i = 0; i < amount.length; i++) {
+        const name = seller[i];
+        const cnt = amount[i];
         
-        if(sendProfit < 1) {
-            node.profit += profit;
-        }
-        else {
-            node.profit += myProfit;
-            
-            if(node.referral !== '-') {
-                splitProceeds(sendProfit, nodes[node.referral]);
-            }
-        }
+        const total = cnt * 100;
+        divideAmount(total, employee[name]);
     }
     
-    // 판매금을 나눠서 전달
-    for(let i = 0; i < seller.length; i++) {
-        const sellerName = seller[i];
-        const sellAmount = amount[i];
-        
-        const profit = sellAmount * 100;
-        splitProceeds(profit, nodes[sellerName]);
-    }
-    
-    enroll.forEach((name) => {
-        answer.push(nodes[name].profit);
-    })
-    
+    for(let person of enroll) {
+        answer.push(employee[person].amount);
+    }    
     
     return answer;
 }
