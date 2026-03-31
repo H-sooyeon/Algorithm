@@ -1,51 +1,60 @@
+// picks: [dia, iron, stone]
+// 우선 백트래킹으로 구현
 function solution(picks, minerals) {
-    // 다이아몬드, 철, 돌 순서 picks
-    let answer = 0;
-    let Fati = {
-        'diamond': {'diamond': 1, 'iron': 1, 'stone': 1},
-        'iron': {'diamond': 5, 'iron': 1, 'stone': 1},
-        'stone': {'diamond': 25, 'iron': 5, 'stone': 1},
+    let answer = Number.MAX_SAFE_INTEGER;
+    const fatigueDashboard = {
+        dia: {
+            diamond: 1,
+            iron: 1,
+            stone: 1,
+        },
+        iron: {
+            diamond: 5,
+            iron: 1,
+            stone: 1,
+        },
+        stone: {
+            diamond: 25,
+            iron: 5,
+            stone: 1
+        }
     }
-    let key = Object.getOwnPropertyNames(Fati);
-    let picks_sum = picks.reduce((acc, cur) => acc + cur, 0);
     
-    let minerals_arr = [];
-    let tmp = [];
-    let sum = 0;
-    for(let i = 0; i < minerals.length; i++) {
-        if(tmp.length === 5) {
-            minerals_arr.push([sum, tmp]);
-            tmp = [];
-            sum = 0;
+    const dfs = (dia, iron, stone, fatigue, curIdx) => {
+        if((dia <= 0 && iron <= 0 && stone <= 0) || curIdx >= minerals.length) {
+            answer = Math.min(answer, fatigue);
+            return;
         }
         
-        tmp.push(minerals[i]);
-        sum += Fati['stone'][minerals[i]];
-    }
-    minerals_arr.push([sum, tmp]);
-    
-    if(picks_sum * 5 < minerals.length)
-        minerals_arr = minerals_arr.slice(0, picks_sum);
-    
-    minerals_arr.sort((a, b) => b[0] - a[0]);
+        // dia 사용
+        if(dia > 0) {
+            let diaFatigue = fatigue;
+            for(let i = curIdx; i < Math.min(minerals.length, curIdx + 5); i++) {
+                diaFatigue += fatigueDashboard['dia'][minerals[i]];
+            }
+            dfs(dia - 1, iron, stone, diaFatigue, Math.min(minerals.length, curIdx + 5));
+        }
 
-    let pick_idx = 0;
-    let minerals_idx = 0;
-    while(pick_idx < picks.length && minerals_idx < minerals_arr.length) {
-        if(picks[pick_idx] === 0) {
-            pick_idx++;
-            continue;
+        // iron 사용
+        if(iron > 0) {
+            let ironFatigue = fatigue;
+            for(let i = curIdx; i < Math.min(minerals.length, curIdx + 5); i++) {
+                ironFatigue += fatigueDashboard['iron'][minerals[i]];
+            }
+            dfs(dia, iron - 1, stone, ironFatigue, Math.min(minerals.length, curIdx + 5));
         }
         
-        let size = minerals_arr[minerals_idx][1].length;
-        for(let i = 0; i < size; i++) {
-            // console.log(Fati[key[pick_idx]], " | ", minerals_arr[minerals_idx][1][i]);
-            answer += Fati[key[pick_idx]][minerals_arr[minerals_idx][1][i]];
+        // stone 사용
+        if(stone > 0) {
+            let stoneFatigue = fatigue;
+            for(let i = curIdx; i < Math.min(minerals.length, curIdx + 5); i++) {
+                stoneFatigue += fatigueDashboard['stone'][minerals[i]];
+            }
+            dfs(dia, iron, stone - 1, stoneFatigue, Math.min(minerals.length, curIdx + 5));
         }
-        picks[pick_idx]--;
-        
-        minerals_idx++;
     }
+    
+    dfs(picks[0], picks[1], picks[2], 0, 0);
     
     return answer;
 }
