@@ -1,50 +1,59 @@
 function solution(relation) {
-    let col_size = relation[0].length;
-    let row_size = relation.length;
-    let set = new Set();
+    const n = relation.length;
+    const m = relation[0].length;
+    const candidateKey = new Set();
     
-    // 주어진 조합이 후보 키 목록에 있는지 확인하는 함수
-    const isMinimal = (comb) => {
-        for (let key of set) {
-            if (key.every(col => comb.includes(col))) {
-                return false;
+    const isCandidateKey = (candidate) => {
+        const tmp = new Set();
+        const keys = candidate.map(Number);
+        for(let i = 0; i < n; i++) {
+            const value = [];
+            for(let key of keys) {
+                value.push(relation[i][key]);
             }
+            
+            tmp.add(value.join(','));
+        }
+        
+        if(tmp.size === n) return true;
+        return false;
+    }
+    
+    const isMinimal = (list) => {
+        for (let keyStr of candidateKey) {
+            const keyArr = keyStr.split(',').map(Number);
+            // key(이미 등록된 후보키)의 모든 원소가 list에 들어있는지 확인
+            if (keyArr.every(v => list.includes(v))) return false;
         }
         return true;
     };
     
-    const combi = (start, b, k) => {
-        if(b.length === k) {
-            let check_set = new Set();
-            
-            for(let i = 0; i < row_size; i++) {
-                let s = '';
-                for(let j = 0; j < b.length; j++) {
-                    s += relation[i][b[j]] + ' ';
-                }
-            
-                check_set.add(s);
+    const combination = (start, depth, list, visited) => {
+        if(list.length === depth) {            
+            // 후보키에 해당하는지 체크 및 추가
+            if (isCandidateKey(list) && isMinimal(list)) {
+                candidateKey.add(list.join(','));
             }
-            
-            if(check_set.size === row_size && isMinimal(b)) {
-                // 유일성이 만족된 경우 if문 안으로
-                // 최소성 검사
-                set.add([...b]);
-            }
-            
             return;
         }
         
-        for(let i = start + 1; i < col_size; i++) {
-            b.push(i);
-            combi(i, b, k);
-            b.pop();
+        for(let i = start + 1; i < m; i++) {
+            if(visited[i]) continue;
+            
+            list.push(i);
+            visited[i] = true;
+            combination(i, depth, list, visited);
+            list.pop();
+            visited[i] = false;
         }
     }
     
-    for(let i = 1; i <= col_size; i++) {
-        combi(-1, [], i);
+    for(let i = 1; i <= m; i++) {
+        const visited = new Array(m).fill(false);
+        combination(-1, i, [], visited);
     }
     
-    return set.size;
+    // console.log(candidateKey)
+    
+    return candidateKey.size === 0 ? 1 : candidateKey.size;
 }
