@@ -1,10 +1,11 @@
 function solution(k, d) {
-    let answer = 0;
+    let answer = 0;   
     
-    for(let x = 0; x <= d; x+=k) {
-        let y = parseInt(Math.sqrt(d ** 2 - x ** 2)); // y 최댓값 확보
-        answer += parseInt(y / k) + 1;
-        // console.log(x, parseInt(y / k));
+    for(let a = 0; a <= d; a += k) {
+        const maxB = Math.sqrt(d ** 2 - a ** 2);
+        
+        // 0을 포함해야 하므로 +1
+        answer += Math.floor(maxB / k) + 1;
     }
     
     return answer;
