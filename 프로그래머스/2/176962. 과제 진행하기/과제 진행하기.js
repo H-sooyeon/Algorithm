@@ -1,61 +1,76 @@
+// 기존에 진행 중이던 과제가 있다면 진행 중이던 과제를 멈추고 새로운 과제 시작
+// 진행중이던 과제를 끝냈을 때, 잠시 멈춘 과제가 있다면 멈춰둔 과제를 이어서 진행
+// 과제를 끝낸 시각에 새로 시작해야 하는 과제와 잠시 멈춰 둔 과제가 모두 있다면, 새로 시작해야 하는 과제부터 진행
 function solution(plans) {
     let answer = [];
-    let save = [];
+    const waiting = [];
     
-    // 문자열 과제 시작 시간 -> 분 단위 정수로 변경
-    plans.forEach((v, idx) => {
-        let [h, m] = v[1].split(':').map(Number);
-        plans[idx][1] = 60 * h + m;
-        plans[idx][2] = Number(plans[idx][2]);
-    })
+    const convertTimeToMin = (time) => {
+        const [hh, mm] = time.split(':').map(Number);
+        return hh * 60 + mm;
+    }
     
-    // 과제 시작 시간 순으로 정렬
-    plans.sort((a, b) => a[1] - b[1]);
+    const copy = plans.map(([name, start, playtime]) => {
+        return [name, convertTimeToMin(start), Number(playtime)];
+    }).sort((a, b) => a[1] - b[1]);
     
-    let plan = plans[0];
-    for(let i = 1; i < plans.length; i++) {
-        let gap = plans[i][1] - plan[1];
-        if(gap < plan[2]) {
-            // 최대한 할 수 있는 만큼 하고 저장해두기
-            save.push([plan[0], plan[2] - gap]);
-            // console.log('최대한 해놓기', plan);
+    
+    let curPlan = null;
+    // console.log(copy);
+    for(let plan of copy) {
+        const [name, start, playtime] = plan;
+        // console.log(plan, 'cur', curPlan);
+        // console.log('before waiting', waiting);
+        
+        if(curPlan === null) {
+            curPlan = {name, start, playtime};
         }
-        else {
-            // 시간 안에 다 할 수 있을 때
-            // console.log('다 할 수 있을 때', plan);
-            answer.push(plan[0]);
-            let remain = gap - plan[2];
-            if(remain === 0) {
-                plan = plans[i];
-                continue;
-            }
+        else if(curPlan.start + curPlan.playtime === start) {
+            // 과제를 끝낸 시각에 새로 시작해야 하는 과제와 잠시 멈춰 둔 과제가 모두 있다면, 새로 시작해야 하는 과제부터 진행
+            // console.log('끝남과 동시에 새로운 과제 시작!', curPlan.name);
+            answer.push(curPlan.name);
+            curPlan = {name, start, playtime};
+        }
+        else if(curPlan.start + curPlan.playtime < start) {
+            // 진행중이던 과제를 끝냈을 때, 잠시 멈춘 과제가 있다면 멈춰둔 과제를 이어서 진행
+            // 대기 중이던 과제들을 start - (curPlan.start + curPlan.playtime) 시간 만큼 진행한다.
+            let diffTime = start - (curPlan.start + curPlan.playtime);
+            // console.log('다음 과제 전에 지금 과제 끝낼 수 있어!', diffTime, '만큼 시간 남음');
+            answer.push(curPlan.name);
+            curPlan = {name, start, playtime};
             
-            // 시간이 남는다면 저장해둔 과제 최근거부터 하기
-            for(let j = save.length - 1; j >= 0; j--) {
-                if(save[j][1] - remain <= 0) {
-                    // 저장해둔 과제 하나 해치울 수 있을 때
-                    remain -= save[j][1];
-                    answer.push(save[j][0]);
-                    save.pop();
-                }
-                else {
-                    // 해치우지 못할 때
-                    save[j][1] -= remain;
+            while(diffTime > 0 && waiting.length > 0) {
+                let [waitingName, waitingStart, remainTime] = waiting.pop();
+                
+                if(remainTime > diffTime) {
+                    waiting.push([waitingName, waitingStart, remainTime - diffTime]);
                     break;
                 }
+                else {
+                    answer.push(waitingName);
+                    diffTime -= remainTime;
+                }
             }
         }
-        plan = plans[i];
+        else if(curPlan !== null) {
+            // 기존에 진행 중이던 과제가 있다면 진행 중이던 과제를 멈추고 새로운 과제 시작
+            waiting.push([curPlan.name, curPlan.start, curPlan.playtime - (start - curPlan.start)]);
+            curPlan = {name, start, playtime};
+        }
+        
+         // console.log('after waiting', waiting);
     }
     
-    // 마지막 과제는 다 할 때까지 한 번에 처리
-    answer.push(plans[plans.length - 1][0]);
-    
-    // 다 끝내지 못한 배열을 최근거부터 하나씩 해치우기
-    // console.log(save);
-    for(let i = save.length - 1; i >= 0; i--) {
-        answer.push(save[i][0]);
+    if(curPlan) {
+        answer.push(curPlan.name);
     }
+
+    while(waiting.length) {
+        const [name, start, playtime] = waiting.pop();
+        answer.push(name);
+    }
+    // console.log(waiting);
+    // console.log(curPlan);
     
     return answer;
 }
