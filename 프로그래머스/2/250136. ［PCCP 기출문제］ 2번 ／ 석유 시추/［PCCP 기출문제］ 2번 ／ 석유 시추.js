@@ -4,11 +4,11 @@ class Queue {
         this.head = 0;
         this.tail = 0;
     }
-    enqueue(item) {
+    push(item) {
         this.items[this.tail] = item;
         this.tail += 1;
     }
-    dequeue() {
+    pop() {
         const item = this.items[this.head];
         delete this.items[this.head];
         this.head += 1;
@@ -23,58 +23,53 @@ function solution(land) {
     let answer = 0;
     const n = land.length;
     const m = land[0].length;
-    const oil = new Array(m).fill(0);
     const visited = Array.from({length: n}, () => Array(m).fill(false));
+    const dy = [0, 1, 0, -1];
+    const dx = [1, 0, -1, 0];
     
-    const dy = [-1, 0, 1, 0];
-    const dx = [0, 1, 0, -1];
+    const petroleum = new Array(m).fill(0);
     
-    const bfs = (i, j) => {
+    const bfs = (curY, curX) => {
         const queue = new Queue();
-        queue.enqueue([i, j]);
-        visited[i][j] = true;
+        queue.push([curY, curX]); // y, x, cnt, maxX
+        visited[curY][curX] = true;
         
-        let minX = j;
-        let maxX = j;
-        let cnt = 0;
-        
+        let resultCnt = 0;
+        let maxX = curX;
         while(queue.size()) {
-            const [y, x] = queue.dequeue();
-            cnt += 1;
+            const [y, x] = queue.pop();
             
-            if(minX > x) {
-                minX = x;
-            }
-            if(maxX < x) {
-                maxX = x;
-            }
+            resultCnt += 1;
+            maxX = Math.max(maxX, x);
             
             for(let i = 0; i < 4; i++) {
-                let ny = y + dy[i];
-                let nx = x + dx[i];
+                const ny = y + dy[i];
+                const nx = x + dx[i];
                 
                 if(ny >= n || nx >= m || ny < 0 || nx < 0) continue;
                 if(visited[ny][nx] || land[ny][nx] === 0) continue;
                 
-                queue.enqueue([ny, nx]);
                 visited[ny][nx] = true;
+                queue.push([ny, nx]);
             }
         }
         
-        return { cnt, minX, maxX };
+        return [resultCnt, maxX];
     }
     
-    for(let i = 0; i < n; i++) {
-        for(let j = 0; j < m; j++) {
-            if(land[i][j] === 1 && !visited[i][j]) {
-                const { cnt, minX, maxX } = bfs(i, j);
+    for(let j = 0; j < m; j++) {
+        for(let i = 0; i < n; i++) {
+            if(land[i][j] === 1 && !visited[i][j]) { // 석유가 존재한다면 dfs 탐색
+                const [cnt, maxX] = bfs(i, j);
                 
-                for(let x = minX; x <= maxX; x++) {
-                    oil[x] += cnt;
+                for(let x = j; x <= maxX; x++) {
+                    petroleum[x] += cnt;
                 }
             }
         }
     }
-        
-    return Math.max(...oil);
+    
+    // console.log(petroleum);
+    
+    return Math.max(...petroleum);
 }
