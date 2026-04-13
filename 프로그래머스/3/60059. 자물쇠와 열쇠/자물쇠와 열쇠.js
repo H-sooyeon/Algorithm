@@ -1,60 +1,67 @@
-// 홈: 0, 돌기: 1
+// lock의 크기를 2배로 늘려서 key를 lock에 맞추기
+// lock의 늘린 공간은 모두 true로 설정(맞아 떨어진다고 설정)
+// key를 회전시켜 총 4번을 lock에 맞대어 확인
 function solution(key, lock) {
-    const m = key.length;
+    let answer = false;
     const n = lock.length;
+    const m = key.length;
+    const depth = 2 * m - 2 + n
     
-    // Lock의 크기를 3배로 늘려 key를 늘린 lock에 대해 모두 탐색
-    const increasedLock = Array.from({length: n * 3}, () => Array(n * 3).fill(0));
+    let doubleLock = Array.from({length: depth}, () => Array(depth).fill(0));
+    const doubleN = doubleLock.length;
     
     for(let i = 0; i < n; i++) {
         for(let j = 0; j < n; j++) {
-            increasedLock[n + i][n + j] = lock[i][j];
+            doubleLock[i + m - 1][j + m - 1] = lock[i][j];
         }
-    }
-        
-    const circulateKey = (prevKey) => {
-        // 90도 회전시키기
-        const newKey = Array.from({length: m}, () => Array(m));
-        
-        for(let i = 0; i < m; i++) {
-            for(let j = 0; j < m; j++) {
-                newKey[j][m-1-i] = prevKey[i][j];
-            }
-        }
-        
-        return newKey;
     }
     
-    const checkLock = (newLock) => {
-        for(let i = n; i < n * 2; i++) {
-            for(let j = n; j < n * 2; j++) {
-                if(newLock[i][j] !== 1) return false;
+    const isMatch = (list) => {
+        for(let i = 0; i < n; i++) {
+            for(let j = 0; j < n; j++) {
+                if(list[i + m - 1][j + m - 1] !== 1) return false;
             }
         }
-        
         return true;
     }
     
-    let prevKey = key;
-    for(let d = 0; d < 4; d++) {
-        const newKey = circulateKey(prevKey);
-        
-        for(let i = 0; i < increasedLock.length - m; i++) {
-            for(let j = 0; j < increasedLock.length - m; j++) {
-                const newLock = increasedLock.map((v) => v.slice());
-                
-                for(let p = 0; p < m; p++) {
-                    for(let q = 0; q < m; q++) {
-                        newLock[i+p][j+q] += newKey[p][q];
-                    }
-                }
-                
-                if(checkLock(newLock)) return true;
+    const rotate = (k) => {
+        const size = k.length;
+        const result = Array.from({length: size}, () => Array(size));
+    
+        for(let r = 0; r < size; r++) {
+            for(let c = 0; c < size; c++) {
+                result[c][size - r - 1] = k[r][c];
             }
         }
         
-        prevKey = newKey;
+        return result;
     }
     
-    return false;
+    let currentKey = key;
+    for(let d = 0; d < 4; d++) {
+        for(let i = 0; i <= doubleN - m; i++) {
+            for(let j = 0; j <= doubleN - m; j++) {
+                
+                for(let r = 0; r < m; r++) {
+                    for(let c = 0; c < m; c++) {
+                        doubleLock[i + r][j + c] += currentKey[r][c];
+                    }
+                }
+            
+                if(isMatch(doubleLock)) {
+                    return true;
+                }
+                
+                for(let r = 0; r < m; r++) {
+                    for(let c = 0; c < m; c++) {
+                        doubleLock[i + r][j + c] -= currentKey[r][c];
+                    }
+                }
+            }
+        }
+        currentKey = rotate(currentKey);
+    }
+    
+    return answer;
 }
