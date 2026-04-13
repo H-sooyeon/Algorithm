@@ -5,42 +5,28 @@ function solution(n) {
     // 백트래킹으로 가능한 위치에 퀸을 놓고 최종 퀸의 개수 찾기
     let answer = 0;
     
-    const findQueen = (list, curRow) => {
-        // console.log('list', list);
-        // console.log('curRow', curRow);
-        if(curRow >= n) {
-            if(list.length === n) answer += 1;
+    const cols = new Array(n).fill(false);
+    const diag1 = new Array(2 * n - 1).fill(false); // /방향
+    const diag2 = new Array(2 * n - 1).fill(false); // \방향
+    
+    const findQueen = (row) => {
+        if(row >= n) {
+            answer += 1;
             return;
         }
         
-        // [curRow, i]
-        for(let i = 0; i < n; i++) {
-            let flag = true;
-            for(let [y, x] of list) {
-                if(x === i) {
-                    flag = false;
-                    break;
-                }
-                
-                // 대각선 체크
-                const dy = Math.abs(y - curRow);
-                const dx = Math.abs(x - i);
-                
-                if(dy === dx) {
-                    flag = false;
-                    break;
-                }
+        for(let col = 0; col < n; col += 1) {
+            if(cols[col] || diag1[row + col] || diag2[row - col + n - 1]) {
+                continue;
             }
             
-            if(flag) {
-                list.push([curRow, i]);
-                findQueen(list, curRow + 1)
-                list.pop();
-            }
+            cols[col] = diag1[row + col] = diag2[row - col + n - 1] = true;
+            findQueen(row + 1);
+            cols[col] = diag1[row + col] = diag2[row - col + n - 1] = false;
         }
     }
     
-    findQueen([], 0);
+    findQueen(0);
     
     return answer;
 }
