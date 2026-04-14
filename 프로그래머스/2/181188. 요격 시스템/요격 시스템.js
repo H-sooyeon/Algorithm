@@ -1,39 +1,41 @@
+// 미사일을 최소로 사용해 폭격 미사일을 요격한다.
+// A 나라 미사일 x 축 평행 직선 형태 (s, e)
+// B 나라 미사일 y 축 평행 직선 형태 (s, e)
 function solution(targets) {
-    let answer = 0;
-    let overlap = [];
+    let answer = 1;
     
-    targets.sort((a, b) => a[0] - b[0]);
+    targets.sort((a, b) => {
+        if(a[0] === b[0]) return b[1] - a[1];
+        return a[0] - b[0];
+    });
+        
+    let start = targets[0][0];
+    let end = targets[0][1];
     
     // console.log(targets);
-    
-    overlap.push(targets[0]);
+    // console.log('initial', start, end);
     for(let i = 1; i < targets.length; i++) {
-        let [pre_start, pre_end] = overlap[overlap.length - 1];
-        let [next_start, next_end] = targets[i];
+        const target = targets[i];
         
-        // 겹친다. overlap 수정
-        if(pre_end > next_start) {
-            overlap.pop();
-            // console.log(i, '번째 ', pre_start, pre_end, next_start, next_end);
-            if(next_end >= pre_end) {
-                // console.log('겹친다! ', next_start, pre_end);
-                overlap.push([next_start, pre_end]);
-                // console.log('넣은 후 targets', targets)
-            }
-            else {
-                // onsole.log('겹친다! ', next_start, next_end);
-                overlap.push([next_start, next_end]);
-                // console.log('넣은 후 targets', targets)
-                
-            }
+        // console.log('target', target);
+        if(end > target[1]) {
+            start = target[0];
+            end = target[1];
+            // console.log('end > target[1]', start, end);
+            continue;
         }
-        else {
-            // 겹치지 않는다. overlap 추가
-            overlap.push([next_start, next_end]);
+        
+        if(end > target[0]) {
+            start = target[0];
+            // console.log('end > target[0]', start, end);
+            continue;
         }
+        
+        answer += 1;
+        start = target[0];
+        end = target[1];
+        // console.log('remain', start, end);
     }
     
-    // console.log(overlap);
-    
-    return overlap.length;
+    return answer;
 }
