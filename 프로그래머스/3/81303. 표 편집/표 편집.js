@@ -1,115 +1,79 @@
+// 처음 표의 행 개수 n
+// 처음에 선택된 행의 위치 k
 function solution(n, k, cmd) {
-    let answer = '';
-    const nodes = new Array(n);
-    let curFocus = k;
-    const deletedNodes = [];
-    const nodesResult = new Array(n).fill(false);
+    let answer = new Array(n).fill('O');
+    const rows = [];
+    const deletedRows = [];
+    let pointer = k;
     
-    function Node(id, prev, next) {
-        this.id = id;
+    function Node(prev, cur, next) {
         this.prev = prev;
+        this.cur = cur;
         this.next = next;
     }
     
-    nodes[0] = new Node(0, null, null);
-    
-    for(let i = 1; i < n; i++) {
-        const node = new Node(i, nodes[i-1], null);
-        nodes[i] = node;
+    rows.push(new Node(null, 0, null));
+    for(let i = 1; i < n - 1; i++) {
+        const node = new Node(rows[i-1], i, null);
+        rows[i-1].next = node;
+        rows.push(node);
     }
+    const lastNode = new Node(rows[rows.length - 1], n - 1, null);
+    rows[rows.length - 1].next = lastNode;
+    rows.push(lastNode);
     
-    nodes[n-1].next = null;
-    
-    for(let i = n - 2; i >= 0; i--) {
-        nodes[i].next = nodes[i+1];
-    }
-    
-    const up = (move, curFocus) => {
-        let targetNode = nodes[curFocus];
-        for(let i = 0; i < move; i++) {
-            if(nodes[targetNode.id].prev) {
-                targetNode = nodes[targetNode.id].prev;
+    for(let line of cmd) {
+        let [command, value] = line.split(' ');
+        
+        if(command === 'D') {
+            value = Number(value);
+            while(value > 0) {
+                if(rows[pointer].next) {
+                    pointer = rows[pointer].next.cur;
+                }
+                value -= 1;
             }
-        }
-        
-        return targetNode.id;
-    }
-    
-    const down = (move, curFocus) => {
-        let targetNode = nodes[curFocus];
-        for(let i = 0; i < move; i++) {
-            if(nodes[targetNode.id].next) {
-                targetNode = nodes[targetNode.id].next;
-            }
-        }
-        
-        return targetNode.id;
-    }
-    
-    const deleteCurRow = () => {
-        deletedNodes.push(nodes[curFocus]);
-        // 삭제된 행이 가장 마지막 행인 경우 바로 윗 행 선택
-        const prevNode = nodes[curFocus].prev;
-        const nextNode = nodes[curFocus].next;
-            
-        if(prevNode && nextNode) {
-            prevNode.next = nextNode;
-            nextNode.prev = prevNode;
-            curFocus = nextNode.id;
-        }
-        else if(!prevNode && nextNode) {
-            nextNode.prev = null;
-            curFocus = nextNode.id;
-        }
-        else if(prevNode && !nextNode) {
-            curFocus = prevNode.id;
-            prevNode.next = null;
-        }
-    }
-    
-    const restoration = () => {
-        const lastDeletedNode = deletedNodes.pop();
-        const prevNode = lastDeletedNode.prev;
-        const nextNode = lastDeletedNode.next;
-        
-        if(prevNode) {
-            prevNode.next = lastDeletedNode;
-        }
-        if(nextNode) {
-            nextNode.prev = lastDeletedNode;
-        }
-    }
-    
-    cmd.forEach((item) => {
-        const [command, move] = item.split(' ');
-        // console.log('command', command, 'move', move, 'curFocus', curFocus);
-        
-        if(command === 'U') {
-            curFocus = up(parseInt(move), curFocus);
-            // console.log('up', curFocus)
-        }
-        else if(command === 'D') {
-            curFocus = down(parseInt(move), curFocus);
-            // console.log('down', curFocus);
         }
         else if(command === 'C') {
-            deleteCurRow();
-            // console.log('delete', curFocus);
+            const currentNode = rows[pointer];
+            const prevNode = currentNode.prev;
+            const nextNode = currentNode.next;
+            
+            if(prevNode) prevNode.next = nextNode;
+            if(nextNode) nextNode.prev = prevNode;
+            
+            deletedRows.push(currentNode);
+            
+            if(currentNode.next) {
+                pointer = nextNode.cur;
+            } 
+            else {
+                pointer = prevNode.cur;
+            }
         }
-        else if(command === 'Z') {
-            restoration();
-            // console.log('restoration', curFocus);
+        else if(command === 'U') {
+            value = Number(value);
+            while(value > 0) {
+                if(rows[pointer].prev) {
+                    pointer = rows[pointer].prev.cur;
+                }
+                value -= 1;
+            }
         }
-    })
-    
-    for(let node of deletedNodes) {
-        nodesResult[node.id] = true;
+        else {
+            // Z
+            const latestDeletedNode = deletedRows.pop();
+            const prevNode = latestDeletedNode.prev;
+            const nextNode = latestDeletedNode.next;
+            
+            if(prevNode) prevNode.next = latestDeletedNode;
+            if(nextNode) nextNode.prev = latestDeletedNode;
+        }
     }
     
-    for(let isDeletedNode of nodesResult) {
-        if(isDeletedNode) answer += 'X';
-        else answer += 'O';
+    for(let deletedRow of deletedRows) {
+        answer[deletedRow.cur] = 'X';
     }
-    
-    return answer;
+        
+    return answer.join('');
 }
