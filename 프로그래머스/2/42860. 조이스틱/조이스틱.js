@@ -3,11 +3,11 @@ function solution(name) {
     const n = name.length;
 
     // 1. 알파벳 변경 횟수 (상하 이동) - 순서와 상관없으므로 미리 계산
-    let alphaMove = 0;
-    for (let i = 0; i < n; i++) {
-        const diff = name.charCodeAt(i) - 65;
-        alphaMove += Math.min(diff, 26 - diff);
-    }
+    // let alphaMove = 0;
+    // for (let i = 0; i < n; i++) {
+    //     const diff = name.charCodeAt(i) - 65;
+    //     alphaMove += Math.min(diff, 26 - diff);
+    // }
 
     // 2. 'A'가 아닌, 반드시 방문해야 할 인덱스들만 추출
     const targets = [];
@@ -20,7 +20,6 @@ function solution(name) {
 
     const visited = new Array(targets.length).fill(false);
 
-    // 3. 백트래킹 함수 (사용자님의 makeList 구조 유지)
     const backtrack = (currIdx, count, moveSum) => {
         // 모든 목표 지점을 방문했다면 최소 이동 거리 갱신
         if (count === targets.length) {
@@ -36,27 +35,42 @@ function solution(name) {
 
             const nextIdx = targets[i];
 
-            // [핵심 수정] 현재 위치(currIdx)에서 다음 목표(nextIdx)까지의 최단 거리
-            // 원형 연결 리스트 구조이므로 두 가지 경로만 존재함
             const dist = Math.abs(currIdx - nextIdx);
             const shortest = Math.min(dist, n - dist); // 정방향 vs 역방향
-
+            
             visited[i] = true;
             backtrack(nextIdx, count + 1, moveSum + shortest);
             visited[i] = false;
         }
     };
+    
+    backtrack(0, 0, 0);
 
-    // 0번 인덱스에서 시작 처리
-    const startInTarget = targets.indexOf(0);
-    if (startInTarget !== -1) {
-        // 0번이 'A'가 아니라면 방문한 것으로 치고 시작
-        visited[startInTarget] = true;
-        backtrack(0, 1, 0);
-    } else {
-        // 0번이 'A'라면 방문 카운트 없이 시작
-        backtrack(0, 0, 0);
+    for(let alpha of name) {
+        let minMove = Number.MAX_SAFE_INTEGER;
+        const baseCode = 'A'.charCodeAt();
+        const targetCode = alpha.charCodeAt();
+        const lastCode = 'Z'.charCodeAt();
+        
+        // 순서대로 위로 올라가는 경우
+        minMove = Math.min(minMove, targetCode - baseCode);
+        // 반대로 가는 경우
+        minMove = Math.min(minMove, lastCode - targetCode + 1);
+        
+        // console.log('alpha', alpha, minMove);
+        answer += minMove;
     }
+    
+    // 0번 인덱스에서 시작 처리
+    // const startInTarget = targets.indexOf(0);
+    // if (startInTarget !== -1) {
+    //     // 0번이 'A'가 아니라면 방문한 것으로 치고 시작
+    //     visited[startInTarget] = true;
+    //     backtrack(0, 1, 0);
+    // } else {
+    //     // 0번이 'A'라면 방문 카운트 없이 시작
+    //     backtrack(0, 0, 0);
+    // }
 
-    return answer + alphaMove;
+    return answer;
 }
