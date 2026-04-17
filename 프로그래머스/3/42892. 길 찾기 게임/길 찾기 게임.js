@@ -1,65 +1,62 @@
-function solution(nodeinfo) {
-    let answer = [[]];
-    const copy = nodeinfo.map((node, idx) => [idx+1, ...node]);
-    
-    copy.sort((a, b) => {
-        if(a[2] === b[2]) {
-            return a[1] - b[1];
-        }
-        return b[2] - a[2]
-    })
-        
-    function Node (idx, x, y, left, right) {
-        this.idx = idx;
-        this.x = x;
+// 노드 번호와 순서는 상관 없음
+// y 값이 큰 노드가 부모 노드에 해당
+// y 값을 기준으로 내림차순 정렬
+// y 값이 같다면 x 값을 기준으로 오름차순 정렬
+function solution(nodeinfo) {    
+    function Node(id, y, x) {
+        this.id = id;
         this.y = y;
-        this.left = left;
-        this.right = right;
+        this.x = x;
+        this.left = null;
+        this.right = null;
     }
     
-    const [rootIdx, rootX, rootY] = copy[0];
-    const root = new Node(rootIdx, rootX, rootY, null, null);
+    const nodes = nodeinfo.map((value, idx) => new Node(idx + 1, value[1], value[0]));
+    nodes.sort((a, b) => {
+        if(a.y === b.y) return a.x - b.x;
+        return b.y - a.y;
+    })
     
-    const findPos = (parent, node) => {
-        if(parent.x < node.x) {
-            if(parent.right) {
-                findPos(parent.right, node);
-                return;
-            }
-            parent.right = node;
+    // 노드들 연결시키기
+    const connectParent = (parent, curNode) => {
+        if(!parent.left && parent.x > curNode.x) {
+            parent.left = curNode;
+            return;
         }
-        else if(parent.x > node.x) {
-            if(parent.left) {
-                findPos(parent.left, node);
-                return;
-            }
-            parent.left = node;
+        if(!parent.right && parent.x < curNode.x) {
+            parent.right = curNode;
+            return;
         }
+        
+        if(parent.x < curNode.x) connectParent(parent.right, curNode);
+        else connectParent(parent.left, curNode);
     }
     
-    for(let i = 1; i < copy.length; i++) {
-        const [idx, x, y] = copy[i];
-        const node = new Node(idx, x, y, null, null);
-        findPos(root, node);
+    const root = nodes[0];
+    for(let i = 1; i < nodes.length; i++) {
+        connectParent(root, nodes[i]);
     }
-    
-    const preorderList = [];
-    const postorderList = [];
-    
+        
+    // 전위순회
+    const preorderArr = [];
     const preorder = (node) => {
-        preorderList.push(node.idx);
+        preorderArr.push(node.id);
+        
         if(node.left) preorder(node.left);
         if(node.right) preorder(node.right);
     }
     
+    // 후위순회
+    const postorderArr = []
     const postorder = (node) => {
         if(node.left) postorder(node.left);
         if(node.right) postorder(node.right);
-        postorderList.push(node.idx);
+        
+        postorderArr.push(node.id);
     }
     
     preorder(root);
     postorder(root);
     
-    return [preorderList, postorderList];
+    return [preorderArr, postorderArr];
 }
