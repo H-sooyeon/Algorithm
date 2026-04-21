@@ -1,39 +1,64 @@
-function solution(n, m, x, y, r, c, k) {
-    let answer = '';
-    // 사전 순으로 빠른 경로 순서 -> d, l, r, u
-    const dx = [1, 0, 0, -1];
-    const dy = [0, -1, 1, 0];
-    const pathSequence = ['d', 'l', 'r', 'u'];
-    
-    const remainDist = (x, y, path) => {
-        return Math.abs(r - x) + Math.abs(c - y) + path.length;
+class Queue {
+    constructor() {
+        this.items = {};
+        this.head = 0;
+        this.tail = 0;
     }
+    push(item) {
+        this.items[this.tail] = item;
+        this.tail += 1;
+    }
+    pop() {
+        const item = this.items[this.head];
+        delete this.items[this.head];
+        this.head += 1;
+        return item;
+    }
+    size() {
+        return this.tail - this.head;
+    }
+}
+
+// 맨헤튼 거리
+// 출발 위치: x, y
+// 탈출 지점: r, c
+function solution(n, m, x, y, r, c, k) {
+    const dir = ['d', 'l', 'r', 'u'];
+    const dy = [1, 0, 0, -1];
+    const dx = [0, -1, 1, 0];
+    const visited = Array.from({length: n}, () => Array.from({length: m}, () => Array(k + 1).fill(false)));
     
-    // 장애물이 없는 경로 탐색은 멘헤튼 거리로 탐색하면 된다.
-    let minDist = remainDist(x, y, '');
-    if(minDist > k) return 'impossible';
-    if((k - minDist) % 2 !== 0) return 'impossible';
+    const minPath = Math.abs(y - c) + Math.abs(x - r)
+    if(minPath > k) return 'impossible';
+    if((k - minPath) % 2 === 1) return 'impossible';
     
-    const dfs = (path, x, y) => {
-        const remain = remainDist(x, y, path);
-        if(remain > k || (k - remain) % 2 !== 0 || answer !== '') return;
+    const queue = new Queue();
+    queue.push([x - 1, y - 1, '']);
+    visited[x - 1][y - 1][0] = true;
+    
+    while(queue.size()) {
+        const [curY, curX, path] = queue.pop();
         
-        if(x === r && y === c && k === path.length) {
-            answer = path;
-            return;
+        if(curY === r - 1 && curX === c - 1 && k === path.length) {
+            return path;
         }
         
         for(let i = 0; i < 4; i++) {
-            const ny = y + dy[i];
-            const nx = x + dx[i];
+            const ny = curY + dy[i];
+            const nx = curX + dx[i];
             
-            if(ny > m || nx > n || ny < 1 || nx < 1) continue;
-            dfs(path + pathSequence[i], nx, ny);
+            const calMinPath = Math.abs(ny - (r - 1)) + Math.abs(nx - (c - 1));
+            
+            if(ny >= n || ny < 0 || nx >= m || nx < 0) continue;
+            if(visited[ny][nx][path.length + 1]) continue;
+            // 지금부터 남은 최소 거리가 k보다 크다면 pass
+            
+            if(calMinPath + path.length > k) continue;
+            if((calMinPath + path.length - k) % 2 === 1) continue;
+            queue.push([ny, nx, path + dir[i]]);
+            visited[ny][nx][path.length + 1] = true;
         }
     }
     
-    dfs('', x, y);
-
-    if(answer) return answer;
     return 'impossible';
 }
