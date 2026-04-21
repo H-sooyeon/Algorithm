@@ -1,30 +1,34 @@
 function solution(cards) {
-    let answer = 1;
-    let visited = new Array(cards.length).fill(false);
+    const visited = new Array(cards.length).fill(false);
     
-        let idx = [];
-        for(let i = 0; i < cards.length; i++) {
-            let start = i + 1;
-            let cnt = 0;
-            let card = [];
-            while(!visited[start - 1]) {
-                card.push(start - 1);
-                cnt++;
-                visited[start - 1] = true;
-                start = cards[start - 1];
-                
-            }
-            if(card.length)
-                idx.push([start - 1, card, cnt]);
+    const findLoop = (start) => {
+        const loop = new Set();
+        
+        let cur = start;
+        visited[cur] = true;
+        
+        while(!loop.has(cur)) {
+            loop.add(cur);
+            let next = cards[cur] - 1;
+            if(visited[next]) break;
+            cur = next;
+            visited[next] = true;
         }
-    
-        idx.sort((a, b) => b[b.length - 1] - a[a.length - 1]);
-    
-    if(idx.length === 1) {
-        return 0;
-    } else {
-        answer = idx[0][2] * idx[1][2];
+        
+        return loop.size;
     }
     
-    return answer;
+    let sizes = [];
+    for(let i = 0; i < cards.length; i++) {
+        if(visited[i]) continue;
+        sizes.push(findLoop(i));
+    }
+    
+    sizes.sort((a, b) => b - a);
+    
+    
+    // console.log(sizes);
+    if(sizes.length === 1) return 0;
+    
+    return sizes[0] * sizes[1];
 }
