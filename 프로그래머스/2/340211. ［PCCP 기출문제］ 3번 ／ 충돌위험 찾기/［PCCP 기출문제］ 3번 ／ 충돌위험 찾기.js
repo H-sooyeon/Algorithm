@@ -1,76 +1,80 @@
-// 로봇이 2대 이상 한 좌표에 모이는 경우를 모두 더한다.
-// 장애물이 없으므로 맨헤튼거리를 계산한다.
+// (r,c) 최단 경로가 여러 가지일 경우 r 좌표가 c 좌표보다 먼저
+// 맨헤튼 거리
 function solution(points, routes) {
     let answer = 0;
-    const xMax = Math.max(...points.map(([y, x]) => x)) + 1;
-    const yMax = Math.max(...points.map(([y, x]) => y)) + 1;
+        
+    let robots = [];
+    const robotsDes = {};
+    const initialPosMap = new Map();
     
-    // system[y][x][time] = 로봇 수
-    const system = Array.from({length: yMax}, () => Array.from({length: xMax}, () => new Map()));
+    for(let i = 0; i < routes.length; i++) {
+        const [start, end, ...rest] = routes[i];
+        robots.push([i, ...points[start - 1]]); // [로봇 번호, y, x];
+        robotsDes[i] = end;
+        
+        const key = `${points[start-1][0]},${points[start-1][1]}`;
+        initialPosMap.set(key, (initialPosMap.get(key) || 0) + 1);
 
-    // 시작점에서의 로봇 위치 기록
-    const startPosition = new Map();
-    
-    routes.forEach((route) => {
-        let time = 0;
-        let currentPosition;
-        
-        const firstPointIndex = route[0] - 1;
-        const [sy, sx] = [points[firstPointIndex][0], points[firstPointIndex][1]];
-        
-        const startPosKey = `${sy},${sx}`;
-        startPosition.set(startPosKey, (startPosition.get(startPosKey) || 0) + 1);
-        
-        for(let i = 1; i < route.length; i++) {
-            const startPointIdx = route[i-1] - 1;
-            const desPointIdx = route[i] - 1;
-            
-            const [sy, sx] = [points[startPointIdx][0], points[startPointIdx][1]];
-            const [dy, dx] = [points[desPointIdx][0], points[desPointIdx][1]];
-            
-            const moveY = dy - sy; // +: 아래로, -: 위로
-            const moveX = dx - sx; // +: 오른쪽, -: 왼쪽
-            
-            let [curY, curX] = [sy, sx];
-            let remainY = Math.abs(moveY);
-            let remainX = Math.abs(moveX);
-            
-            while(remainY > 0) {
-                time += 1;
-                if(moveY > 0) curY += 1;
-                else curY -= 1;
-                remainY -= 1;
-                
-                // 시간별 위치 기록
-                const posMap = system[curY][curX];
-                posMap.set(time, (posMap.get(time) || 0) + 1);
-            }
-            
-            while(remainX > 0) {
-                time += 1;
-                if(moveX > 0) curX += 1;
-                else curX -= 1;
-                remainX -= 1;
-                
-                const posMap = system[curY][curX];
-                posMap.set(time, (posMap.get(time) || 0) + 1);
-            }
+        if(rest) {
+            routes[i] = rest;
         }
-    })
+    }
     
-    // 출발 위치에서의 충돌 확인
-    for(const [pos, count] of startPosition) {
-        if(count >= 2) answer += 1;
-    } 
+    for(let [key, value] of initialPosMap) {
+        if(value > 1) answer += 1;
+    }
     
-    for(let y = 0; y < yMax; y++) {
-        for(let x = 0; x < xMax; x++) {
-            const timeMap = system[y][x];
-            
-            for(const [time, count] of timeMap) {
-                if(count >= 2) answer += 1;
-            }
+    // console.log(robotsDes);
+    // console.log(routes);
+    const findNextPos = (cur, robotNum) => {
+        const [dy, dx] = points[robotsDes[robotNum]-1];
+        const [cy, cx] = cur;
+                
+        if(dy === cy) {
+            // x 좌표 이동
+            if(dx > cx) return [cy, cx + 1];
+            return [cy, cx - 1];
         }
+        else {
+            // y 좌표 이동
+            if(dy > cy) return [cy + 1, cx];
+            return [cy - 1, cx];
+        }
+    }
+    
+    // 이동해야 하는 로봇들이 남아있다면 계속 진행
+    while(robots.length) {
+        // 로봇들의 다음 위치 찾기
+        const posMap = new Map();
+        const nextRobots = [];
+        
+        // [로봇 번호, y, x]
+        for(let [num, y, x] of robots) {
+            let [dy, dx] = points[robotsDes[num] - 1];
+            
+            if(dy === y && dx === x) {
+                if(routes[num].length > 0) {
+                    robotsDes[num] = routes[num][0];
+                    routes[num].shift();
+                    [dy, dx] = points[robotsDes[num] - 1];
+                    // console.log(routes);
+                    // console.log(robotsDes);
+                }
+                else continue;
+            };
+            const [ny, nx] = findNextPos([y, x], num);
+            
+            // console.log(num, ny, nx, 'des', dy, dx);
+            const key = `${ny},${nx}`
+            posMap.set(key, (posMap.get(key) || 0) + 1);
+            nextRobots.push([num, ny, nx]);
+        }
+        
+        for(let [key, value] of posMap) {
+            if(value > 1) answer += 1;
+        }
+        // console.log(posMap);
+        robots = nextRobots;
     }
     
     return answer;
