@@ -1,56 +1,42 @@
 function solution(s) {
     let answer = [];
-    const removed110 = new Array(s.length);
-    const cnt110 = new Array(s.length).fill(0);
     
-    const is110 = (stack) => {
-        const len = stack.length;
-        if(stack[len-1] === '0' && stack[len-2] === '1' && stack[len-3] === '1') {
-            return true;
-        }
-        return false;
-    }
-    
-    const sortWith110 = (item, cnt) => {
-        const repeat110 = '110'.repeat(cnt);
-        for(let i = item.length - 1; i >= 0; i--) {
-            if(item[i] === '0') {
-                const prev = item.slice(0, i+1);
-                const next = item.slice(i+1);
-                
-                return prev + repeat110 + next;
-            }
-        }
-        if(repeat110.length > 0) {
-            return repeat110 + item;
-        }
-        return item;
-    }
-    
-    // 110 뽑기
-    s.forEach((strItem, idx) => {
-        let stack = [];
-        let copyItem = strItem.split('');
+    // 먼저 110을 모두 추출해 개수를 센다.
+    const find110 = (x) => {
+        let cnt = 0;
+        const stack = [];
         
-        let itemIdx = 0;
-        while(itemIdx <= copyItem.length) {
-            stack.push(copyItem[itemIdx]);
+        for(const char of x) {
+            stack.push(char);
             
-            while(stack.length >= 3 && is110(stack)) {
-                for(let i = 0; i < 3; i++) {
-                    stack.pop();
-                }
-                cnt110[idx] += 1;
+            if(stack.length >= 3 && 
+               stack[stack.length - 3] === '1' && 
+               stack[stack.length - 2] === '1' && 
+               stack[stack.length - 1] === '0') {
+                stack.pop();
+                stack.pop();
+                stack.pop();
+                cnt += 1;
             }
-            itemIdx += 1;
         }
         
-        removed110[idx] = stack.join('');
-    })
-
-    removed110.forEach((item, idx) => {
-        answer.push(sortWith110(item, cnt110[idx]));
-    })
+        return {x: stack.join(''), cnt};
+    }
+    
+    for(let str of s) {
+        const {x, cnt} = find110(str);
+        // 남은 문자열에서 '110'이 들어갈 위치 찾기
+        // 마지막 0의 바로 뒤에 몰아넣는다.
+        const lastZeroIdx = x.lastIndexOf('0');
+    
+        if(lastZeroIdx === -1) {
+            answer.push('110'.repeat(cnt) + x);
+            continue;
+        }
+    
+        const result = x.slice(0, lastZeroIdx + 1) + '110'.repeat(cnt) + x.slice(lastZeroIdx + 1);
+        answer.push(result);
+    }
     
     return answer;
 }
