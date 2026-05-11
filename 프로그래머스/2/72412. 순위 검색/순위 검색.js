@@ -1,57 +1,80 @@
+// cpp, java, python
+// backend, frontend
+// junior, senior
+// chicken, pizza
+// info: 개발언어 직군 경력 소울푸드 점수
+// query: 개발언어 and 직군 and 경력 and 소울푸드 X
 function solution(info, query) {
-    const answer = [];
+    let answer = [];
     const map = new Map();
-
-    // 1. info의 모든 가능한 조합(16가지)을 미리 Map에 저장
-    function combination(parts, score, start) {
-        const key = parts.join(""); // 키를 하나로 합침
-        if (map.has(key)) map.get(key).push(score);
-        else map.set(key, [score]);
-
-        for (let i = start; i < 4; i++) {
-            const temp = [...parts];
-            temp[i] = "-"; // 와일드카드 처리된 키 생성
-            combination(temp, score, i + 1);
-        }
+    
+    // 사람을 각 조건에 맞춰 저장
+    info.forEach((v, idx) => {
+        const [la, fi, hi, fo, score] = v.split(' ');
+        
+        const key = `${la}-${fi}-${hi}-${fo}`;
+        if(!map.has(key)) map.set(key, []);
+        
+        map.get(key).push(+score);
+     })
+    
+    // 같은 조건 내에서 점수로 오름차순 정렬
+    for(let [key, value] of map) {
+        map.set(key, value.sort((a, b) => a - b));
     }
-
-    info.forEach((v) => {
-        const parts = v.split(" ");
-        const score = Number(parts.pop()); // 마지막 점수 분리
-        combination(parts, score, 0);
-    });
-
-    // 2. 모든 점수 리스트를 미리 "딱 한 번씩만" 정렬
-    for (let [key, value] of map) {
-        value.sort((a, b) => a - b);
-    }
-
-    // 3. 효율적인 이진 탐색 (Lower Bound)
-    const getLowerBound = (target, score) => {
+    
+    const lowerBound = (target, score) => {
         let left = 0;
         let right = target.length;
-        while (left < right) {
-            let mid = (left + right) >>> 1; // Math.floor 대신 비트 연산 (미세 최적화)
-            if (target[mid] < score) left = mid + 1;
-            else right = mid;
-        }
-        return target.length - left;
-    };
-
-    // 4. 쿼리 처리: 이제 4중 for문 없이 단 한 번의 조회로 끝냄
-    query.forEach((q) => {
-        // " and "와 공백을 기준으로 점수와 조건을 분리
-        const parts = q.replace(/ and /g, "").split(" ");
-        const score = Number(parts.pop());
-        const key = parts.join("");
         
-        const list = map.get(key);
-        if (list) {
-            answer.push(getLowerBound(list, score));
-        } else {
-            answer.push(0);
+        while(left < right) {
+            let mid = Math.floor((left + right) / 2);
+            
+            if(target[mid] < score) {
+                left = mid + 1;
+            } else {
+                right = mid;
+            }
         }
-    });
-
+        
+        return target.length - right;
+    }
+    
+    const separatedQuery = (query) => {
+        let q = query.split(' and ');
+        let last = q.pop();
+        let [food, score] = last.split(' ');
+        let [lang, field, career] = q;
+        
+        lang = lang === '-' ? ['cpp', 'java', 'python'] : [lang];
+        field = field === '-' ? ['frontend', 'backend'] : [field];
+        career = career === '-' ? ['junior', 'senior'] : [career];
+        food = food === '-' ? ['pizza', 'chicken'] : [food];
+        
+        let result = [];
+        for(let la of lang) {
+            for(let fi of field) {
+                for(let ca of career) {
+                    for(let fo of food) {
+                        const key = `${la}-${fi}-${ca}-${fo}`;
+                        result.push([key, +score]);
+                    }
+                }
+            }
+        }
+        return result;
+    }
+    
+    query.forEach((q) => {
+        const newQueryList = separatedQuery(q);
+        let sum = 0;
+        
+        for(let [newQuery, score] of newQueryList) {
+            let list = map.get(newQuery);
+            sum += list ? lowerBound(list, score) : 0;
+        }
+        answer.push(sum);
+    })
+    
     return answer;
 }
