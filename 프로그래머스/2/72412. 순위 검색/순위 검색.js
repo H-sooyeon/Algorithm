@@ -1,6 +1,6 @@
 function solution(info, query) {
     let answer = [];
-    const map = new Map();
+    let map = new Map();
     
     info.forEach((v, idx) => {
         const [lang, field, career, food, score] = v.split(' ');
@@ -14,7 +14,7 @@ function solution(info, query) {
         }
     })
     
-    for(let [key, value] of map) {
+    for(let [key, value] of map.entries()) {
         map.set(key, value.sort((a, b) => a - b));
     }
     
@@ -35,13 +35,13 @@ function solution(info, query) {
         
         return target.length - left;
     }
-    
+
     const separatedQuery = (query) => {
         let q = query.split(' and ');
         let last = q.pop();
         let [food, score] = last.split(' ');
         let [lang, field, career] = q;
-        
+
         lang = lang === '-' ? ['cpp', 'java', 'python'] : [lang];
         field = field === '-' ? ['backend', 'frontend'] : [field];
         career = career === '-' ? ['junior', 'senior'] : [career];
@@ -60,19 +60,19 @@ function solution(info, query) {
         }
         
         return result;
-    }
+    };
     
     query.forEach((q) => {
-        const newQueryList = separatedQuery(q);
+        const newQueryList = separatedQuery(q)
         let sum = 0;
         
         for(let [newQuery, score] of newQueryList) {
             let list = map.get(newQuery);
-            
             sum += list ? targetCnt(list, score) : 0;
         }
-        answer.push(sum);
+        answer.push(sum);    
     })
+        
     
     return answer;
 }
