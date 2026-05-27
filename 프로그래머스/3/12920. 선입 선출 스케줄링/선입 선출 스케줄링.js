@@ -1,47 +1,44 @@
 function solution(n, cores) {
     let answer = 0;
     
-    if(cores.length >= n) {
-        return n;
-    }
-    
-    // 5개를 먼저 처리하도록 한 후 마지막 1개의 작업을 누가 처리하게 되는지를 확인
-    let start = Math.min(...cores);
-    let end = start * n;
-    
-    let time = start;
-    while(start <= end) {
-        const mid = Math.floor((start + end) / 2);
+    // 모든 일이 언제 끝나는지 시간 알아내기
+    let endTime = 0;
+    let left = 1;
+    let right = Number.MAX_SAFE_INTEGER;
+    while(left <= right) {
+        let mid = Math.floor((left + right) / 2);
+        let count = cores.length;
         
-        let cnt = cores.length;
-        cores.forEach((core) => {
-            cnt += Math.floor(mid / core);
-        })
+        for(let i = 0; i < cores.length; i++) {
+            count += Math.floor(mid / cores[i]);
+        }
         
-        if(cnt >= n) {
-            end = mid - 1;
-            time = mid;
+        if(count >= n) {
+            right = mid - 1;
+            endTime = mid;
         }
         else {
-            start = mid + 1;
+            left = mid + 1;
         }
     }
     
-    let work = cores.length;
-    const prevTime = time - 1; // 마지막 시간 전
+    // 0초 작업 할당
+    let remainWorkload = n - cores.length;
+    if(remainWorkload <= 0) return n;
     
-    cores.forEach((core) => {
-        work += Math.floor(prevTime / core);
-    })
-        
     for(let i = 0; i < cores.length; i++) {
-        if(time % cores[i] === 0) work += 1;
-        
-        if(work >= n) {
-            answer = i + 1;
-            break;
-        }
+        remainWorkload -= Math.floor((endTime - 1) / cores[i]);
     }
+    
+    for(let i = 0; i < cores.length; i++) {
+        if(endTime % cores[i] === 0) {
+            remainWorkload -= 1;
+        }
         
-    return answer;
+        if(remainWorkload === 0) return i + 1;
+    }
+    // console.log(remainWorkload)
+    
+    return -1;
+    // 마지막 작업을 처리하는 코어의 번호
 }
